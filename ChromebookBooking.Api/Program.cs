@@ -1,11 +1,12 @@
-using ChromebookBooking.Api.Interfaces;
-using ChromebookBooking.Api.Services;
+using ChromebookBooking.Api;
 
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddControllers();
 builder.Services.AddOpenApi();
-builder.Services.AddScoped<ICabinetService, CabinetService>();
+builder.Services.AddApiServices();
+builder.Services.AddInfrastructure(builder.Configuration);
+builder.Services.AddExceptionHandler();
 
 var app = builder.Build();
 
@@ -17,6 +18,8 @@ if (app.Environment.IsDevelopment())
 app.UseHttpsRedirection();
 
 app.UseAuthorization();
+
+app.UseExceptionHandler();
 
 app.MapControllers();
 

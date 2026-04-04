@@ -1,12 +1,23 @@
 ﻿using ChromebookBooking.Api.Domain.Common.Exceptions;
+using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace ChromebookBooking.Api.Domain.Entities;
 
-public class Cabinet
+public sealed class Cabinet
 {
+    [Key]
+    [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
     public int Id { get; private set; }
-    public string Name { get; private set; }
+
+    [Required]
+    [StringLength(100)]
+    public string Name { get; private set; } = string.Empty;
+
+    [Required]
     public bool IsActive { get; private set; }
+
+    private Cabinet() { }
 
     public Cabinet(string name)
     {
@@ -15,15 +26,9 @@ public class Cabinet
         IsActive = true;
     }
 
-    public void Deactivate()
-    {
-        IsActive = false;
-    }
+    public void Deactivate() => IsActive = false;
 
-    public void Activate()
-    {
-        IsActive = true;
-    }
+    public void Activate() => IsActive = true;
 
     public void UpdateName(string newName)
     {
