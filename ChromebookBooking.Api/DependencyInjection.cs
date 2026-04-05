@@ -32,4 +32,21 @@ public static class DependencyInjection
 
         return services;
     }
+
+    public static IServiceCollection AddCorsPolicy(this IServiceCollection services, IConfiguration configuration)
+    {
+        string origin = configuration["Cors:AllowedOrigin"]!;
+
+        services.AddCors(options =>
+        {
+            options.AddPolicy("Dev", policy =>
+            {
+                policy.WithOrigins(origin!)
+                      .AllowAnyHeader()
+                      .AllowAnyMethod();
+            });
+        });
+
+        return services;
+    }
 }

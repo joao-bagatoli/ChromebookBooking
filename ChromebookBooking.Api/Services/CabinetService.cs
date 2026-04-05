@@ -19,6 +19,7 @@ public sealed class CabinetService : ICabinetService
     {
         return await _context.Cabinets
             .AsNoTracking()
+            .OrderBy(c => c.Name)
             .Select(c => ToResponse(c))
             .ToListAsync();
     }

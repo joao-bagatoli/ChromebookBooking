@@ -1,4 +1,8 @@
 <Solution>
   <Project Path="ChromebookBooking.Api/ChromebookBooking.Api.csproj" />
+  <Project Path="ChromebookBooking.App/ChromebookBooking.App.esproj">
+    <Build />
+    <Deploy />
+  </Project>
   <Project Path="ChromebookBooking.Tests/ChromebookBooking.Tests.csproj" Id="29573674-a85b-4972-81b3-f181111359e0" />
 </Solution>
