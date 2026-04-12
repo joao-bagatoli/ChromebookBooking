@@ -8,6 +8,7 @@ import AxiosHttpClient from './http/AxiosHttpClient'
 import ServiceFactory from './services/ServiceFactory'
 import { createPinia } from 'pinia'
 import { router } from './router'
+import { useAuthStore } from './stores/useAuthStore'
 
 const httpClient = new AxiosHttpClient()
 const baseUrl = import.meta.env.VITE_BASE_URL
@@ -26,5 +27,8 @@ app.use(pinia)
 app.use(router)
 
 app.provide('serviceFactory', serviceFactory)
+
+const authStore = useAuthStore()
+authStore.init()
 
 app.mount('#app')
