@@ -1,23 +1,22 @@
 <script setup lang="ts">
-  import { inject, onMounted, ref } from 'vue';
+  import { onMounted, ref } from 'vue';
   import BaseButton from './components/ui/BaseButton.vue'
   import BaseInput from './components/ui/BaseInput.vue'
   import InputText from 'primevue/inputtext'
-  import type ServiceFactory from './services/ServiceFactory';
+  import { useCabinetStore } from './stores/useCabinetStore';
 
-  const serviceFactory = inject('serviceFactory') as ServiceFactory
-  const cabinetService = serviceFactory.createCabinetService()
   const cabinet = ref('')
+  const store = useCabinetStore()
 
   onMounted(() => {
-    const data = cabinetService.getAllCabinets()
-    console.log(data)
+    store.getAllCabinets()
   })
 </script>
 
 <template>
   <BaseInput type="text" v-model="cabinet" />
   <BaseButton label="Submit" />
+  {{ store.cabinets }}
 </template>
 
 <style scoped>

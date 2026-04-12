@@ -6,10 +6,12 @@ import PrimeVue from 'primevue/config'
 import Aura from '@primeuix/themes/aura'
 import AxiosHttpClient from './http/AxiosHttpClient'
 import ServiceFactory from './services/ServiceFactory'
+import { createPinia } from 'pinia'
 
 const httpClient = new AxiosHttpClient()
 const baseUrl = import.meta.env.VITE_BASE_URL
 const serviceFactory = new ServiceFactory(httpClient, baseUrl)
+const pinia = createPinia()
 
 const app = createApp(App)
 
@@ -18,6 +20,8 @@ app.use(PrimeVue, {
     preset: Aura
   }
 })
+
+app.use(pinia)
 
 app.provide('serviceFactory', serviceFactory)
 
