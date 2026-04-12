@@ -4,6 +4,7 @@ var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddControllers();
 builder.Services.AddOpenApi();
+builder.Services.AddSupabaseAuthentication(builder.Configuration);
 builder.Services.AddApiServices();
 builder.Services.AddInfrastructure(builder.Configuration);
 builder.Services.AddExceptionHandler();
@@ -20,11 +21,12 @@ else
     app.UseHttpsRedirection();
 }
 
+app.UseExceptionHandler();
+
 app.UseCors("Dev");
 
+app.UseAuthentication();
 app.UseAuthorization();
-
-app.UseExceptionHandler();
 
 app.MapControllers();
 

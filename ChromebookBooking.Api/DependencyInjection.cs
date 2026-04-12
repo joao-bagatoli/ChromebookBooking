@@ -1,7 +1,9 @@
 ﻿using ChromebookBooking.Api.Infrastructure;
 using ChromebookBooking.Api.Interfaces;
 using ChromebookBooking.Api.Services;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.IdentityModel.Tokens;
 
 namespace ChromebookBooking.Api;
 
@@ -46,6 +48,43 @@ public static class DependencyInjection
                       .AllowAnyMethod();
             });
         });
+
+        return services;
+    }
+
+    public static IServiceCollection AddSupabaseAuthentication(this IServiceCollection services, IConfiguration configuration)
+    {
+        string validIssuer = configuration["Supabase:ValidIssuer"] 
+            ?? throw new InvalidOperationException("Supabase Valid Issuer is missing.");
+
+        services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+            .AddJwtBearer(options =>
+            {
+                options.Authority = validIssuer;
+
+                options.TokenValidationParameters = new TokenValidationParameters
+                {
+                    ValidAudience = "authenticated",
+                    ClockSkew = TimeSpan.Zero
+                };
+
+                // DEBUG
+                options.Events = new JwtBearerEvents
+                {
+                    OnAuthenticationFailed = context =>
+                    {
+                        Console.WriteLine($"\n[JWT ERROr] Auth Failed: {context.Exception.Message}\n");
+                        return Task.CompletedTask;
+                    },
+                    OnTokenValidated = context =>
+                    {
+                        Console.WriteLine("\n[JWT SUCCESS] Token validated with asymmetric keys!\n");
+                        return Task.CompletedTask;
+                    }
+                };
+            });
+
+        services.AddAuthorization();
 
         return services;
     }
