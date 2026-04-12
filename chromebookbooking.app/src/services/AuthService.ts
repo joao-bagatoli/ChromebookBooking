@@ -1,5 +1,5 @@
-import type { AuthChangeEvent, Session } from "@supabase/supabase-js";
-import { supabase } from "../auth/supabase";
+import type { AuthChangeEvent, Session } from "@supabase/supabase-js"
+import { supabase } from "../auth/supabase"
 
 export default class AuthService {
   async loginWithGoogle(): Promise<void> {

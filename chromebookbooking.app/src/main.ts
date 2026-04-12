@@ -10,25 +10,20 @@ import { createPinia } from 'pinia'
 import { router } from './router'
 import { useAuthStore } from './stores/useAuthStore'
 
-const httpClient = new AxiosHttpClient()
-const baseUrl = import.meta.env.VITE_BASE_URL
-const serviceFactory = new ServiceFactory(httpClient, baseUrl)
 const pinia = createPinia()
-
 const app = createApp(App)
 
-app.use(PrimeVue, {
-  theme: {
-    preset: Aura
-  }
-})
-
+app.use(PrimeVue, { theme: { preset: Aura } })
 app.use(pinia)
 app.use(router)
 
-app.provide('serviceFactory', serviceFactory)
-
 const authStore = useAuthStore()
-authStore.init()
+await authStore.init()
+
+const httpClient = new AxiosHttpClient(() => authStore.getToken())
+const baseUrl = import.meta.env.VITE_BASE_URL
+const serviceFactory = new ServiceFactory(httpClient, baseUrl)
+
+app.provide('serviceFactory', serviceFactory)
 
 app.mount('#app')

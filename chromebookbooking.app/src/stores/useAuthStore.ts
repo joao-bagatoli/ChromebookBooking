@@ -1,14 +1,13 @@
 import { defineStore } from 'pinia'
-import { inject, ref } from 'vue'
-import ServiceFactory from '../services/ServiceFactory'
+import { ref } from 'vue'
 import type { Session, User } from '@supabase/supabase-js'
+import AuthService from '../services/AuthService'
 
 export const useAuthStore = defineStore('auth', () => {
-  const serviceFactory = inject('serviceFactory') as ServiceFactory
-  const authService = serviceFactory.createAuthService()
   const user = ref<User | null>(null)
   const session = ref<Session | null>(null)
   const loading = ref<boolean>(false)
+  const authService = new AuthService()
 
   async function init() {
     loading.value = true

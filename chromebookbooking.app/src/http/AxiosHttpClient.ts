@@ -4,8 +4,15 @@ import type IHttpClient from "./IHttpClient";
 export default class AxiosHttpClient implements IHttpClient {
   private readonly axios: AxiosInstance
 
-  constructor() {
+  constructor(getToken: () => string | null) {
     this.axios = axios.create()
+    this.axios.interceptors.request.use(config => {
+      const token = getToken()
+      if (token) {
+        config.headers.Authorization = `Bearer ${token}`
+      }
+      return config
+    })
   }
 
   async get<T>(url: string, params?: Record<string, unknown>): Promise<T> {
