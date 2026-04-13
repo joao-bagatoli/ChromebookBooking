@@ -25,6 +25,11 @@ public sealed class ExceptionHandler : IExceptionHandler
                 problemDetails.Title = "Bad Request";
                 problemDetails.Detail = exception.Message;
                 break;
+            case UnauthorizedAccessException:
+                problemDetails.Status = StatusCodes.Status401Unauthorized;
+                problemDetails.Title = "Unauthorized";
+                problemDetails.Detail = exception.Message;
+                break;
             default:
                 problemDetails.Status = StatusCodes.Status500InternalServerError;
                 problemDetails.Title = "Internal Server Error";

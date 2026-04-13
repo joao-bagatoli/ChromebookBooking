@@ -1,4 +1,4 @@
-using ChromebookBooking.Api;
+using ChromebookBooking.Api.Extensions;
 
 var builder = WebApplication.CreateBuilder(args);
 

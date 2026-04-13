@@ -11,7 +11,7 @@ public sealed class User
     [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
     public int Id { get; private set; }
 
-    public Guid AuthUserId { get; private set; }
+    public Guid? AuthUserId { get; private set; }
 
     public Email Email { get; private set; }
 
