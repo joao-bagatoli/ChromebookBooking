@@ -1,4 +1,5 @@
 ﻿using ChromebookBooking.Api.Domain.Entities;
+using ChromebookBooking.Api.Domain.ValueObjects;
 using ChromebookBooking.Api.DTOs;
 using ChromebookBooking.Api.Infrastructure;
 using ChromebookBooking.Api.Interfaces;
@@ -39,13 +40,14 @@ public sealed class UserService : IUserService
 
     public async Task<UserResponse> CreateUserAsync(CreateUserRequest request)
     {
-        bool emailExists = await _context.Users.AnyAsync(u => u.Email.Value == request.Email);
+        var email = Email.Create(request.Email);
+        bool emailExists = await _context.Users.AnyAsync(u => u.Email == email);
         if (emailExists)
         {
             throw new InvalidOperationException($"O email '{request.Email}' já está cadastrado no sistema.");
         }
 
-        var user = new User(request.Email, request.Role);
+        var user = new User(email, request.Role);
         _context.Users.Add(user);
         await _context.SaveChangesAsync();
         return ToResponse(user);
@@ -77,6 +79,6 @@ public sealed class UserService : IUserService
 
     private static UserResponse ToResponse(User user)
     {
-        return new UserResponse(user.Id, user.Email.Value, user.Role.ToString());
+        return new UserResponse(user.Id, user.Email.Value, user.Role, user.IsActive);
     }
 }

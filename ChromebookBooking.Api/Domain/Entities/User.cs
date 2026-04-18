@@ -23,9 +23,9 @@ public sealed class User
 
     private User() { }
 
-    public User(string email, UserRole role)
+    public User(Email email, UserRole role)
     {
-        Email = Email.Create(email);
+        Email = email;
         Role = role;
         IsActive = true;
     }

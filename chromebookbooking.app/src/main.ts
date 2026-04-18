@@ -8,7 +8,7 @@ import AxiosHttpClient from './http/AxiosHttpClient'
 import ServiceFactory from './services/ServiceFactory'
 import { createPinia } from 'pinia'
 import { router } from './router'
-import { useAuthStore } from './stores/useAuthStore'
+import { useAuthStore } from './stores/auth'
 
 const pinia = createPinia()
 const app = createApp(App)

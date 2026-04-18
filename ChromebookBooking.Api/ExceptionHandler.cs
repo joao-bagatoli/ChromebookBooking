@@ -21,6 +21,7 @@ public sealed class ExceptionHandler : IExceptionHandler
                 problemDetails.Detail = exception.Message;
                 break;
             case DomainException:
+            case InvalidOperationException:
                 problemDetails.Status = StatusCodes.Status400BadRequest;
                 problemDetails.Title = "Bad Request";
                 problemDetails.Detail = exception.Message;

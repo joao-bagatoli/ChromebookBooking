@@ -3,7 +3,7 @@
   import BaseButton from '../components/ui/BaseButton.vue'
   import BaseInput from '../components/ui/BaseInput.vue'
   import InputText from 'primevue/inputtext'
-  import { useCabinetStore } from '../stores/useCabinetStore';
+  import { useCabinetStore } from '../stores/cabinet';
 
   const cabinet = ref('')
   const store = useCabinetStore()

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-  import { useAuthStore } from "../stores/useAuthStore"
+  import { useAuthStore } from "../stores/auth"
   import BaseButton from '../components/ui/BaseButton.vue'
 
   const authStore = useAuthStore()
