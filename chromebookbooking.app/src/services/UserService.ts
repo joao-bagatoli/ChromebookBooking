@@ -1,5 +1,5 @@
 import type IHttpClient from '../http/IHttpClient'
-import type { User, UserRole } from '../types/user'
+import type { User, UserRole, LoggedUser } from '../types/user'
 
 export default class UserService {
   constructor(private readonly httpClient: IHttpClient, private readonly baseUrl: string) { }
@@ -24,7 +24,7 @@ export default class UserService {
     return await this.httpClient.patch(`${this.baseUrl}/users/${id}/deactivate`, {})
   }
 
-  async validateAccess(): Promise<void> {
+  async getLoggedUser(): Promise<LoggedUser> {
     return await this.httpClient.get(`${this.baseUrl}/users/me`)
   }
 

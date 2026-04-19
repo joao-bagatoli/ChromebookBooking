@@ -67,10 +67,17 @@ public sealed class UserService : IUserService
         await _context.SaveChangesAsync();
     }
 
-    public async Task ValidateAccessAsync(Guid authUserId, string email)
+    public async Task<LoggedUserResponse> GetLoggedUserAsync(Guid authUserId, string email)
+    {
+        User loggedUser = await ValidateAccessAsync(authUserId, email);
+        IReadOnlyList<string> modules = loggedUser.GetAccessibleModules();
+        return new LoggedUserResponse(loggedUser.Id, loggedUser.Email.Value, loggedUser.Role, modules);
+    }
+
+    private async Task<User> ValidateAccessAsync(Guid authUserId, string email)
     {
         Email targetEmail = Email.Create(email);
-        var user = await _context.Users.FirstOrDefaultAsync(u => u.Email == targetEmail)
+        User user = await _context.Users.FirstOrDefaultAsync(u => u.Email == targetEmail)
             ?? throw new UnauthorizedAccessException("Usuário não cadastrado.");
 
         if (!user.IsActive)
@@ -81,6 +88,8 @@ public sealed class UserService : IUserService
             user.LinkSupabaseAccount(authUserId);
             await _context.SaveChangesAsync();
         }
+
+        return user;
     }
 
     private async Task<User> GetUserAsync(int id)

@@ -9,5 +9,5 @@ public interface IUserService
     Task<UserResponse> CreateUserAsync(CreateUserRequest request);
     Task ActivateUserAsync(int id);
     Task DeactivateUserAsync(int id);
-    Task ValidateAccessAsync(Guid authUserId, string email);
+    Task<LoggedUserResponse> GetLoggedUserAsync(Guid authUserId, string email);
 }

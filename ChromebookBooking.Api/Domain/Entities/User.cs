@@ -1,4 +1,5 @@
-﻿using ChromebookBooking.Api.Domain.Common.Enums;
+﻿using ChromebookBooking.Api.Domain.Common.Constants;
+using ChromebookBooking.Api.Domain.Common.Enums;
 using ChromebookBooking.Api.Domain.ValueObjects;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
@@ -37,4 +38,15 @@ public sealed class User
     public void ChangeRole(UserRole newRole) => Role = newRole;
 
     public void LinkSupabaseAccount(Guid authUserId) => AuthUserId = authUserId;
+
+    public IReadOnlyList<string> GetAccessibleModules()
+    {
+        return Role switch
+        {
+            UserRole.Teacher => [AppModules.Schedule],
+            UserRole.Admin => AppModules.All,
+            _ => []
+        };
+    }
+
 }

@@ -61,8 +61,8 @@ public sealed class UsersController : ControllerBase
     [Authorize]
     public async Task<IActionResult> Me()
     {
-        await _service.ValidateAccessAsync(User.GetUserId(), User.GetUserEmail());
-        return Ok();
+        var loggedUser = await _service.GetLoggedUserAsync(User.GetUserId(), User.GetUserEmail());
+        return Ok(loggedUser);
     }
 
 }
