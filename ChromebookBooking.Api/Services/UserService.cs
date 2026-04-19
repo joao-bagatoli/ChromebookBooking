@@ -67,6 +67,22 @@ public sealed class UserService : IUserService
         await _context.SaveChangesAsync();
     }
 
+    public async Task ValidateAccessAsync(Guid authUserId, string email)
+    {
+        Email targetEmail = Email.Create(email);
+        var user = await _context.Users.FirstOrDefaultAsync(u => u.Email == targetEmail)
+            ?? throw new UnauthorizedAccessException("Usuário não cadastrado.");
+
+        if (!user.IsActive)
+            throw new UnauthorizedAccessException("Usuário inativo.");
+
+        if (user.AuthUserId is null)
+        {
+            user.LinkSupabaseAccount(authUserId);
+            await _context.SaveChangesAsync();
+        }
+    }
+
     private async Task<User> GetUserAsync(int id)
     {
         var user = await _context.Users.FindAsync(id);

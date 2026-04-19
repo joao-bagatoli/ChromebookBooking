@@ -1,4 +1,5 @@
 ﻿using ChromebookBooking.Api.DTOs;
+using ChromebookBooking.Api.Extensions;
 using ChromebookBooking.Api.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -54,6 +55,14 @@ public sealed class UsersController : ControllerBase
     {
         await _service.DeactivateUserAsync(id);
         return NoContent();
+    }
+
+    [HttpGet("me")]
+    [Authorize]
+    public async Task<IActionResult> Me()
+    {
+        await _service.ValidateAccessAsync(User.GetUserId(), User.GetUserEmail());
+        return Ok();
     }
 
 }

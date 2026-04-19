@@ -2,6 +2,7 @@ import { defineStore } from 'pinia'
 import { ref } from 'vue'
 import type { Session, User } from '@supabase/supabase-js'
 import AuthService from '../services/AuthService'
+import UserService from '../services/UserService'
 
 export const useAuthStore = defineStore('auth', () => {
   const user = ref<User | null>(null)
@@ -37,6 +38,16 @@ export const useAuthStore = defineStore('auth', () => {
     return session.value?.access_token ?? null
   }
 
+  async function validateAccess(userService: UserService) {
+    if (!user.value) return;
+    try {
+      await userService.validateAccess()
+    } catch (error) {
+      console.error('Error validating access:', error)
+      await logout()
+    }
+  }
+
   return {
     user,
     session,
@@ -44,6 +55,7 @@ export const useAuthStore = defineStore('auth', () => {
     init,
     loginWithGoogle,
     logout,
-    getToken
+    getToken,
+    validateAccess
   }
 })

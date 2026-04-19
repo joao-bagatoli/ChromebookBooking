@@ -26,4 +26,7 @@ const serviceFactory = new ServiceFactory(httpClient, baseUrl)
 
 app.provide('serviceFactory', serviceFactory)
 
+const userService = serviceFactory.createUserService()
+await authStore.validateAccess(userService)
+
 app.mount('#app')

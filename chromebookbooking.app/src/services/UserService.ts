@@ -23,4 +23,9 @@ export default class UserService {
   async deactivateUser(id: number): Promise<void> {
     return await this.httpClient.patch(`${this.baseUrl}/users/${id}/deactivate`, {})
   }
+
+  async validateAccess(): Promise<void> {
+    return await this.httpClient.get(`${this.baseUrl}/users/me`)
+  }
+
 }
