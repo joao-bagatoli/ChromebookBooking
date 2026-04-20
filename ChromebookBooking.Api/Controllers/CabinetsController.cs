@@ -1,4 +1,5 @@
-﻿using ChromebookBooking.Api.DTOs;
+﻿using ChromebookBooking.Api.Domain.Common.Enums;
+using ChromebookBooking.Api.DTOs;
 using ChromebookBooking.Api.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -17,7 +18,7 @@ public sealed class CabinetsController : ControllerBase
     }
 
     [HttpGet]
-    [Authorize]
+    [Authorize(Roles = nameof(UserRole.Admin))]
     public async Task<IActionResult> GetAllCabinets()
     {
         var cabinets = await _service.GetAllCabinetsAsync();
@@ -25,7 +26,7 @@ public sealed class CabinetsController : ControllerBase
     }
 
     [HttpGet("{id}")]
-    [Authorize]
+    [Authorize(Roles = nameof(UserRole.Admin))]
     public async Task<IActionResult> GetCabinetById(int id)
     {
         var cabinet = await _service.GetCabinetByIdAsync(id);
@@ -33,7 +34,7 @@ public sealed class CabinetsController : ControllerBase
     }
 
     [HttpPost]
-    [Authorize]
+    [Authorize(Roles = nameof(UserRole.Admin))]
     public async Task<IActionResult> CreateCabinet(CreateCabinetRequest request)
     {
         var cabinet = await _service.CreateCabinetAsync(request);
@@ -41,7 +42,7 @@ public sealed class CabinetsController : ControllerBase
     }
 
     [HttpPut("{id}")]
-    [Authorize]
+    [Authorize(Roles = nameof(UserRole.Admin))]
     public async Task<IActionResult> UpdateCabinet(int id, UpdateCabinetRequest request)
     {
         await _service.UpdateCabinetAsync(id, request);
@@ -49,7 +50,7 @@ public sealed class CabinetsController : ControllerBase
     }
 
     [HttpPatch("{id}/activate")]
-    [Authorize]
+    [Authorize(Roles = nameof(UserRole.Admin))]
     public async Task<IActionResult> ActivateCabinet(int id)
     {
         await _service.ActivateCabinetAsync(id);
@@ -57,7 +58,7 @@ public sealed class CabinetsController : ControllerBase
     }
 
     [HttpPatch("{id}/deactivate")]
-    [Authorize]
+    [Authorize(Roles = nameof(UserRole.Admin))]
     public async Task<IActionResult> DeactivateCabinet(int id)
     {
         await _service.DeactivateCabinetAsync(id);
@@ -65,7 +66,7 @@ public sealed class CabinetsController : ControllerBase
     }
 
     [HttpDelete("{id}")]
-    [Authorize]
+    [Authorize(Roles = nameof(UserRole.Admin))]
     public async Task<IActionResult> DeleteCabinet(int id)
     {
         await _service.DeleteCabinetAsync(id);

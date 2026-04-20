@@ -1,6 +1,7 @@
 ﻿using ChromebookBooking.Api.Infrastructure;
 using ChromebookBooking.Api.Interfaces;
 using ChromebookBooking.Api.Services;
+using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
@@ -86,6 +87,8 @@ public static class DependencyInjection
             });
 
         services.AddAuthorization();
+
+        services.AddTransient<IClaimsTransformation, RoleClaims>();
 
         return services;
     }

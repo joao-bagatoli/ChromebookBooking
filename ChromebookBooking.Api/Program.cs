@@ -11,6 +11,8 @@ builder.Services.AddControllers()
 
 builder.Services.AddOpenApi();
 
+builder.Services.AddMemoryCache();
+
 builder.Services.AddSupabaseAuthentication(builder.Configuration);
 builder.Services.AddApiServices();
 builder.Services.AddInfrastructure(builder.Configuration);

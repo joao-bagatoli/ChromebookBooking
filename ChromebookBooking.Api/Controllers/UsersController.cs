@@ -1,4 +1,5 @@
-﻿using ChromebookBooking.Api.DTOs;
+﻿using ChromebookBooking.Api.Domain.Common.Enums;
+using ChromebookBooking.Api.DTOs;
 using ChromebookBooking.Api.Extensions;
 using ChromebookBooking.Api.Interfaces;
 using Microsoft.AspNetCore.Authorization;
@@ -18,7 +19,7 @@ public sealed class UsersController : ControllerBase
     }
 
     [HttpGet]
-    [Authorize]
+    [Authorize(Roles = nameof(UserRole.Admin))]
     public async Task<IActionResult> GetAllUsers()
     {
         var users = await _service.GetAllUsersAsync();
@@ -26,7 +27,7 @@ public sealed class UsersController : ControllerBase
     }
 
     [HttpGet("{id}")]
-    [Authorize]
+    [Authorize(Roles = nameof(UserRole.Admin))]
     public async Task<IActionResult> GetUserById(int id)
     {
         var user = await _service.GetUserByIdAsync(id);
@@ -34,7 +35,7 @@ public sealed class UsersController : ControllerBase
     }
 
     [HttpPost]
-    [Authorize]
+    [Authorize(Roles = nameof(UserRole.Admin))]
     public async Task<IActionResult> CreateUser(CreateUserRequest request)
     {
         var user = await _service.CreateUserAsync(request);
@@ -42,7 +43,7 @@ public sealed class UsersController : ControllerBase
     }
 
     [HttpPatch("{id}/activate")]
-    [Authorize]
+    [Authorize(Roles = nameof(UserRole.Admin))]
     public async Task<IActionResult> ActivateUser(int id)
     {
         await _service.ActivateUserAsync(id);
@@ -50,7 +51,7 @@ public sealed class UsersController : ControllerBase
     }
 
     [HttpPatch("{id}/deactivate")]
-    [Authorize]
+    [Authorize(Roles = nameof(UserRole.Admin))]
     public async Task<IActionResult> DeactivateUser(int id)
     {
         await _service.DeactivateUserAsync(id);
