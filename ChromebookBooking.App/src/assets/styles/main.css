@@ -3,11 +3,24 @@
 *,
 *::before,
 *::after {
-  box-sizing: border-box;
-  margin: 0;
-  padding: 0;
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
 }
 
 body {
-  font-family: 'Inter', sans-serif;
+    font-family: 'Inter', sans-serif;
+}
+
+.view-title {
+    font-size: 1.5rem;
+    font-weight: 600;
+    line-height: 2rem;
+}
+
+.view-subtitle {
+    font-size: var(--font-base);
+    color: var(--p-surface-500);
+    line-height: 1.25rem;
+    margin-top: 0.25rem;
 }

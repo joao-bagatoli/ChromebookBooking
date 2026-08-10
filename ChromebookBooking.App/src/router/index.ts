@@ -62,7 +62,7 @@ router.beforeEach((to, _from, next) => {
     if (!isAuthenticated) {
       return next({ name: 'Login' })
     }
-    if (isAuthenticated && !isAuthorized) {
+    if (!isAuthorized) {
       return next({ name: 'AccessDenied' })
     }
     if (to.path === '/') {

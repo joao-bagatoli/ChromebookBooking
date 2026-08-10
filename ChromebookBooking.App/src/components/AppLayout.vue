@@ -32,5 +32,6 @@
       flex-direction: column;
       overflow-y: auto;
       background-color: var(--p-surface-50);
+      padding: 1.5rem;
   }
 </style>

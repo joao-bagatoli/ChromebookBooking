@@ -8,7 +8,7 @@ export const useUserStore = defineStore('user', () => {
   const userService = serviceFactory.createUserService()
   const users = ref<User[]>([])
 
-  async function getAllUsers() {
+  async function loadUsers() {
     try {
       users.value = await userService.getAllUsers()
     } catch (error) {
@@ -18,6 +18,6 @@ export const useUserStore = defineStore('user', () => {
 
   return {
     users,
-    getAllUsers
+    loadUsers
   }
 })
