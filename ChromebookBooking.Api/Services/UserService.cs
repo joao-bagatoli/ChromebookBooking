@@ -138,6 +138,8 @@ public sealed class UserService : IUserService
     {
         Email targetEmail = Email.Create(email);
 
+        EmailAccessPolicy.EnsureIsAllowed(targetEmail, _securitySettings.AllowedBypassEmails);
+
         User user = await _context.Users.FirstOrDefaultAsync(u => u.Email == targetEmail)
             ?? throw new UnauthorizedAccessException("Usuário não cadastrado.");
 
