@@ -1,12 +1,12 @@
 import { defineStore } from 'pinia'
-import { inject } from 'vue'
+import { inject, ref } from 'vue'
 import ServiceFactory from '../services/ServiceFactory'
-import { ref } from 'vue'
 import type { Cabinet } from '../types/cabinet'
 
 export const useCabinetStore = defineStore('cabinet', () => {
   const serviceFactory = inject('serviceFactory') as ServiceFactory
   const cabinetService = serviceFactory.createCabinetService()
+
   const cabinets = ref<Cabinet[]>([])
 
   async function getAllCabinets() {
@@ -17,8 +17,17 @@ export const useCabinetStore = defineStore('cabinet', () => {
     }
   }
 
+  async function createCabinet(name: string) {
+    const cabinet = await cabinetService.createCabinet(name)
+
+    cabinets.value.push(cabinet)
+
+    return cabinet
+  }
+
   return {
     cabinets,
-    getAllCabinets
+    getAllCabinets,
+    createCabinet
   }
 })

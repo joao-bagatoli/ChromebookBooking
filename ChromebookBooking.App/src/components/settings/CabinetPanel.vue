@@ -3,7 +3,7 @@ import { onMounted } from 'vue';
 import { useCabinetStore } from '@/stores/cabinet';
 import DataTable from 'primevue/datatable';
 import Column from 'primevue/column';
-import Button from 'primevue/button'; // Importe o componente Button do PrimeVue
+import Button from 'primevue/button'; 
 
 const cabinetStore = useCabinetStore();
 
