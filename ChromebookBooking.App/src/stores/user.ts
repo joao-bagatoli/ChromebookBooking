@@ -1,7 +1,7 @@
 import { defineStore } from 'pinia'
 import { inject, ref } from 'vue'
 import ServiceFactory from '../services/ServiceFactory'
-import type { User } from '../types/user'
+import type { User, UserRole } from '../types/user'
 
 export const useUserStore = defineStore('user', () => {
   const serviceFactory = inject('serviceFactory') as ServiceFactory
@@ -16,8 +16,18 @@ export const useUserStore = defineStore('user', () => {
     }
   }
 
+  async function addUser(email: string, role: UserRole) {
+    try {
+      const newUser = await userService.createUser(email, role)
+      users.value.push(newUser)
+    } catch (error) {
+      console.error('Error creating user:', error)
+    }
+  }
+
   return {
     users,
-    loadUsers
+    loadUsers,
+    addUser
   }
 })
