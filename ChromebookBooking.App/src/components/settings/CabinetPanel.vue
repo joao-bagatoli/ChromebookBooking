@@ -1,25 +1,40 @@
 <script setup lang="ts">
-import { onMounted } from 'vue';
-import { useCabinetStore } from '@/stores/cabinet';
-import DataTable from 'primevue/datatable';
-import Column from 'primevue/column';
-import Button from 'primevue/button'; 
+import { onMounted, ref } from 'vue'
+import { useCabinetStore } from '@/stores/cabinet'
+import type { Cabinet } from '@/types/cabinet'
 
-const cabinetStore = useCabinetStore();
+import DataTable from 'primevue/datatable'
+import Column from 'primevue/column'
+import Button from 'primevue/button'
+
+import CabinetDialog from '@/components/settings/dialogs/CabinetDialog.vue'
+
+
+const cabinetStore = useCabinetStore()
+
+const dialogVisible = ref(false)
+const selectedCabinet = ref<Cabinet | null>(null)
 
 const columns = [
   { field: 'name', header: 'Nome' },
   { field: 'isActive', header: 'Ativo' },
   { field: 'action', header: 'Ações' },
-];
+]
 
 onMounted(async () => {
-  await cabinetStore.getAllCabinets();
-});
+  await cabinetStore.getAllCabinets()
+})
 
-const editCabinet = (data: any) => {
-  console.log('Editar item:', data);
-};
+const editCabinet = (cabinet: Cabinet) => {
+  selectedCabinet.value = { ...cabinet }
+  dialogVisible.value = true
+}
+
+const handleDialogClose = () => {
+  if (!dialogVisible.value) {
+    selectedCabinet.value = null
+  }
+}
 </script>
 
 <template>
@@ -29,6 +44,7 @@ const editCabinet = (data: any) => {
             :field="col.field"
             :header="col.header">
       <template #body="slotProps">
+
         <template v-if="col.field === 'action'">
           <Button icon="pi pi-pencil"
                   severity="secondary"
@@ -37,10 +53,19 @@ const editCabinet = (data: any) => {
                   @click="editCabinet(slotProps.data)" />
         </template>
 
+        <template v-else-if="col.field === 'isActive'">
+          {{ slotProps.data.isActive ? 'Sim' : 'Não' }}
+        </template>
+
         <template v-else>
           {{ slotProps.data[col.field] }}
         </template>
+
       </template>
     </Column>
   </DataTable>
+
+  <CabinetDialog v-model:visible="dialogVisible"
+                 :cabinet="selectedCabinet"
+                 @update:visible="handleDialogClose" />
 </template>
