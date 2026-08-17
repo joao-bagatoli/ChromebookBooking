@@ -3,6 +3,7 @@ import 'primeicons/primeicons.css'
 import { createApp } from 'vue'
 import App from './App.vue'
 import PrimeVue from 'primevue/config'
+import ToastService from 'primevue/toastservice'
 import { preset } from './theme/preset'
 import AxiosHttpClient from './http/AxiosHttpClient'
 import ServiceFactory from './services/ServiceFactory'
@@ -14,6 +15,7 @@ const pinia = createPinia()
 const app = createApp(App)
 
 app.use(PrimeVue, { theme: { preset } })
+app.use(ToastService)
 app.use(pinia)
 
 const authStore = useAuthStore()
