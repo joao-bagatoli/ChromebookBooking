@@ -27,7 +27,7 @@
 </script>
 
 <template>
-  <div class="users-container">
+  <div>
     <DataTable :value="userStore.users">
       <Column field="email" header="E-mail"></Column>
 
