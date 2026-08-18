@@ -7,4 +7,8 @@ export default class SectionService {
   async getAllSections(): Promise<Section[]> {
     return await this.httpClient.get(`${this.baseUrl}/sections`)
   }
+
+  async createSection(name: string): Promise<Section> {
+    return await this.httpClient.post(`${this.baseUrl}/sections`, { name })
+  }
 }

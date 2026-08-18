@@ -1,25 +1,46 @@
 <script setup lang="ts">
+import { ref } from 'vue'
+import { useSectionStore } from '@/stores/section'
 import Dialog from 'primevue/dialog'
 import Button from 'primevue/button'
 import InputText from 'primevue/inputtext'
 
+const sectionStore = useSectionStore()
+
 const visible = defineModel<boolean>('visible', { default: false })
 
-const handleSave = () => {
-  visible.value = false
+const form = ref({
+  name: ''
+})
+
+function clearForm() {
+  form.value.name = ''
+}
+
+const handleSave = async () => {
+  try {
+    await sectionStore.addSection(form.value.name)
+    clearForm()
+    visible.value = false
+  } catch {
+
+  }
 }
 </script>
 
 <template>
-  <Dialog v-model:visible="visible" modal header="Adicionar Turma" :style="{ width: '25rem' }">
-    <span class="p-text-secondary block mb-5">Preencha os dados da nova turma.</span>
-    <div class="flex align-items-center gap-3 mb-3">
-      <label for="sectionName" class="font-semibold w-6rem">Nome</label>
-      <InputText id="sectionName" class="flex-auto" autocomplete="off" />
+  <Dialog v-model:visible="visible" modal header="Adicionar Turma" :style="{ width: '30rem' }">
+    <div class="form-container">
+      <div class="form-group">
+        <label for="sectionName">Nome</label>
+        <InputText id="sectionName" v-model="form.name" autocomplete="off" />
+      </div>
     </div>
-    <div class="flex justify-content-end gap-2">
-      <Button type="button" label="Cancelar" severity="secondary" @click="visible = false" />
-      <Button type="button" label="Salvar" @click="handleSave" />
-    </div>
+    <template #footer>
+      <div class="dialog-footer">
+        <Button label="Cancelar" severity="secondary" outlined @click="visible = false" />
+        <Button label="Salvar" @click="handleSave" />
+      </div>
+    </template>
   </Dialog>
 </template>
