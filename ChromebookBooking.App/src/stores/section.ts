@@ -16,8 +16,18 @@ export const useSectionStore = defineStore('section', () => {
     }
   }
 
+  async function addSection(name: string) {
+    try {
+      const newSection = await sectionService.createSection(name)
+      sections.value.push(newSection)
+    } catch (error) {
+      console.error('Error adding user:', error)
+    }
+  }
+
   return {
     sections,
-    loadSections
+    loadSections,
+    addSection
   }
 })
