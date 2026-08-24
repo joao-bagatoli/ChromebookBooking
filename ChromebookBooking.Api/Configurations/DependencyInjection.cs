@@ -97,7 +97,7 @@ public static class DependencyInjection
 
     public static IServiceCollection AddSecuritySettings(this IServiceCollection services, IConfiguration configuration)
     {
-        services.Configure<SecuritySettings>(configuration.GetSection("AppSettings"));
+        services.Configure<SecuritySettings>(configuration.GetSection("Security"));
 
         return services;
     }

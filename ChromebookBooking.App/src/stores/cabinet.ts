@@ -1,7 +1,6 @@
 import { defineStore } from 'pinia'
-import { inject } from 'vue'
+import { inject, ref } from 'vue'
 import ServiceFactory from '../services/ServiceFactory'
-import { ref } from 'vue'
 import type { Cabinet } from '../types/cabinet'
 
 export const useCabinetStore = defineStore('cabinet', () => {
@@ -17,8 +16,25 @@ export const useCabinetStore = defineStore('cabinet', () => {
     }
   }
 
+  async function createCabinet(name: string) {
+    const cabinet = await cabinetService.createCabinet(name)
+    cabinets.value.push(cabinet)
+    return cabinet
+  }
+
+  async function updateCabinet(id: number, name: string, isActive: boolean) {
+    await cabinetService.updateCabinet(id, name, isActive)
+
+    const index = cabinets.value.findIndex((c) => c.id === id)
+    if (index !== -1) {
+      cabinets.value[index] = { id, name, isActive }
+    }
+  }
+
   return {
     cabinets,
-    getAllCabinets
+    getAllCabinets,
+    createCabinet,
+    updateCabinet
   }
 })

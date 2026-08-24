@@ -5,7 +5,7 @@
   import Popover from 'primevue/popover'
   import Button from 'primevue/button'
   import Tag from 'primevue/tag'
-  import type { UserRole } from '../types/user'
+  import { getRoleSeverity, getRoleLabel } from '../utils/userUtils'
 
   const op = ref()
   const authStore = useAuthStore()
@@ -21,16 +21,6 @@
   const userEmail = computed(() => authStore.user?.email || null)
 
   const userRole = computed(() => authStore.profile?.role || null)
-
-  const roleSeverities: Record<string, string> = {
-    Admin: 'info',
-    Teacher: 'success'
-  }
-
-  const tagSeverity = computed(() => {
-    if (!userRole.value) return ''
-    return roleSeverities[userRole.value] || ''
-  })
 
   function toggleMenu(event: Event) {
     op.value.toggle(event)
@@ -63,7 +53,7 @@
         <div class="user-info">
           <div class="user-identity">
             <span class="user-name">{{ userName }}</span>
-            <Tag :value="userRole" :severity="tagSeverity" class="role-tag" rounded></Tag>
+            <Tag :value="getRoleLabel(userRole)" :severity="getRoleSeverity(userRole)" class="tag-font" rounded></Tag>
           </div>
           <span class="user-email">{{ userEmail }}</span>
         </div>
@@ -119,11 +109,6 @@
     color: var(--p-text-color)
   }
 
-  .role-tag {
-      font-size: var(--font-sm);
-      font-weight: 600;
-  }
-
   .user-email {
     font-size: var(--font-sm);
     color: var(--p-text-muted-color);
@@ -135,5 +120,4 @@
       justify-content: flex-start;
   }
 
-  /*force deploy*/
 </style>
