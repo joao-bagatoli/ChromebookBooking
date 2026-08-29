@@ -13,6 +13,7 @@ export const useSectionStore = defineStore('section', () => {
       sections.value = await sectionService.getAllSections()
     } catch (error) {
       console.error('Error loading sections:', error)
+      throw error
     }
   }
 
@@ -22,12 +23,28 @@ export const useSectionStore = defineStore('section', () => {
       sections.value.push(newSection)
     } catch (error) {
       console.error('Error adding user:', error)
+      throw error
+    }
+  }
+
+  async function updateSection(id: number, payload: { name: string, isActive: boolean }) {
+    try {
+      await sectionService.updateSection(id, payload)
+      const section = sections.value.find(s => s.id === id)
+      if (section) {
+        section.name = payload.name
+        section.isActive = payload.isActive
+      }
+    } catch (error) {
+      console.error('Error updating section:', error)
+      throw error
     }
   }
 
   return {
     sections,
     loadSections,
-    addSection
+    addSection,
+    updateSection
   }
 })

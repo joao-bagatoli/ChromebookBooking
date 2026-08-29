@@ -11,4 +11,8 @@ export default class SectionService {
   async createSection(name: string): Promise<Section> {
     return await this.httpClient.post(`${this.baseUrl}/sections`, { name })
   }
+
+  async updateSection(id: number, payload: { name: string, isActive: boolean }): Promise<void> {
+    return await this.httpClient.put(`${this.baseUrl}/sections/${id}`, payload)
+  }
 }

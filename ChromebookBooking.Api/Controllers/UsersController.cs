@@ -42,7 +42,7 @@ public sealed class UsersController : ControllerBase
         return CreatedAtAction(nameof(GetUserById), new { id = user.Id }, user);
     }
 
-    [HttpPut]
+    [HttpPut("{id}")]
     [Authorize(Roles = nameof(UserRole.Admin))]
     public async Task<IActionResult> UpdateUser(int id, UpdateUserRequest request)
     {
@@ -50,21 +50,21 @@ public sealed class UsersController : ControllerBase
         return NoContent();
     }
 
-    [HttpPatch("{id}/activate")]
-    [Authorize(Roles = nameof(UserRole.Admin))]
-    public async Task<IActionResult> ActivateUser(int id)
-    {
-        await _service.ActivateUserAsync(id);
-        return NoContent();
-    }
+    //[HttpPatch("{id}/activate")]
+    //[Authorize(Roles = nameof(UserRole.Admin))]
+    //public async Task<IActionResult> ActivateUser(int id)
+    //{
+    //    await _service.ActivateUserAsync(id);
+    //    return NoContent();
+    //}
 
-    [HttpPatch("{id}/deactivate")]
-    [Authorize(Roles = nameof(UserRole.Admin))]
-    public async Task<IActionResult> DeactivateUser(int id)
-    {
-        await _service.DeactivateUserAsync(id);
-        return NoContent();
-    }
+    //[HttpPatch("{id}/deactivate")]
+    //[Authorize(Roles = nameof(UserRole.Admin))]
+    //public async Task<IActionResult> DeactivateUser(int id)
+    //{
+    //    await _service.DeactivateUserAsync(id);
+    //    return NoContent();
+    //}
 
     [HttpGet("me")]
     [Authorize]
