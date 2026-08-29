@@ -48,7 +48,7 @@ public sealed class SectionService : ISectionService
     public async Task UpdateSectionAsync(int id, UpdateSectionRequest request)
     {
         Section section = await GetSectionAsync(id);
-        section.UpdateName(request.Name);
+        section.Update(request.Name, request.IsActive);
         await _context.SaveChangesAsync();
     }
 
@@ -67,6 +67,6 @@ public sealed class SectionService : ISectionService
 
     private static SectionResponse ToResponse(Section section)
     {
-        return new SectionResponse(section.Id, section.Name);
+        return new SectionResponse(section.Id, section.Name, section.IsActive);
     }
 }

@@ -19,34 +19,55 @@
   interface SettingPanel {
     key: string,
     title: string,
-    component: Component
+    component: Component,
+    addLabel: string,
+    dialogComponent: Component
   }
 
   const settingPanels = shallowRef<SettingPanel[]>([
-    { key: 'users', title: 'Usuários', component: UserPanel },
-    { key: 'sections', title: 'Turmas', component: SectionPanel },
-    { key: 'cabinets', title: 'Gabinetes', component: CabinetPanel }
+    {
+      key: 'users',
+      title: 'Usuários',
+      component: UserPanel,
+      addLabel: 'Adicionar Usuário',
+      dialogComponent: UserDialog
+    },
+    {
+      key: 'sections',
+      title: 'Turmas',
+      component: SectionPanel,
+      addLabel: 'Adicionar Turma',
+      dialogComponent: SectionDialog
+    },
+    {
+      key: 'cabinets',
+      title: 'Gabinetes',
+      component: CabinetPanel,
+      addLabel: 'Adicionar Gabinete',
+      dialogComponent: CabinetDialog
+    }
   ])
 
   const activePanel = ref('users')
 
-  const showUserModal = ref(false)
-  const showSectionModal = ref(false)
-  const showCabinetModal = ref(false)
+  const isDialogVisible = ref(false)
+  const itemToEdit = ref<any>(null)
 
-  const addButtonLabel = computed(() => {
-    switch (activePanel.value) {
-      case 'users': return 'Adicionar Usuário'
-      case 'sections': return 'Adicionar Turma'
-      case 'cabinets': return 'Adicionar Gabinete'
-      default: return 'Adicionar'
-    }
+  const currentActiveSettings = computed(() => {
+    return settingPanels.value.find(p => p.key === activePanel.value)
   })
 
+  const addButtonLabel = computed(() => currentActiveSettings.value?.addLabel)
+  const activeDialogComponent = computed(() => currentActiveSettings.value?.dialogComponent)
+
   const handleAdd = () => {
-    if (activePanel.value === 'users') showUserModal.value = true
-    if (activePanel.value === 'sections') showSectionModal.value = true
-    if (activePanel.value === 'cabinets') showCabinetModal.value = true
+    itemToEdit.value = null
+    isDialogVisible.value = true
+  }
+
+  const handleEdit = (item: any) => {
+    itemToEdit.value = item
+    isDialogVisible.value = true
   }
 </script>
 
@@ -70,14 +91,15 @@
 
       <TabPanels>
         <TabPanel v-for="panel in settingPanels" :key="panel.key" :value="panel.key">
-          <component :is="panel.component" />
+          <component :is="panel.component" @edit="handleEdit" />
         </TabPanel>
       </TabPanels>
     </Tabs>
 
-    <UserDialog v-model:visible="showUserModal" />
-    <SectionDialog v-model:visible="showSectionModal" />
-    <CabinetDialog v-model:visible="showCabinetModal" />
+    <component v-if="activeDialogComponent"
+               :is="activeDialogComponent"
+               v-model:visible="isDialogVisible"
+               :item="itemToEdit" />
   </div>
 </template>
 

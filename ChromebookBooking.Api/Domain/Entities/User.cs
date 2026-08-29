@@ -35,17 +35,22 @@ public sealed class User
         IsActive = true;
     }
 
-    public void Deactivate() => IsActive = false;
-
-    public void Activate() => IsActive = true;
-
     public void ChangeRole(UserRole newRole)
     {
+        if (Role == newRole)
+            return;
+
         Role = newRole;
 
         if (!IsTeacher)
             ClearSections();
     }
+
+    //public void Deactivate() => IsActive = false;
+
+    //public void Activate() => IsActive = true;
+
+    public void SetStatus(bool isActive) => IsActive = isActive;
 
     public void LinkSupabaseAccount(Guid authUserId) => AuthUserId = authUserId;
 

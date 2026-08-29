@@ -14,6 +14,9 @@ public sealed class Section
     [StringLength(100)]
     public string Name { get; private set; } = string.Empty;
 
+    // ALTER TABLE
+    public bool? IsActive { get; private set; }
+
     private readonly List<User> _users = [];
     public IReadOnlyCollection<User> Users => _users.AsReadOnly();
 
@@ -23,12 +26,14 @@ public sealed class Section
     {
         ValidateName(name);
         Name = name;
+        IsActive = true;
     }
     
-    public void UpdateName(string newName)
+    public void Update(string name, bool isActive)
     {
-        ValidateName(newName);
-        Name = newName;
+        ValidateName(name);
+        Name = name;
+        IsActive = isActive;
     }
 
     private static void ValidateName(string name)

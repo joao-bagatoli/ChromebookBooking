@@ -8,8 +8,8 @@ public interface IUserService
     Task<UserResponse> GetUserByIdAsync(int id);
     Task<UserResponse> CreateUserAsync(CreateUserRequest request);
     Task UpdateUserAsync(int id, UpdateUserRequest request);
-    Task ActivateUserAsync(int id);
-    Task DeactivateUserAsync(int id);
+    //Task ActivateUserAsync(int id);
+    //Task DeactivateUserAsync(int id);
     Task<LoggedUserResponse> GetLoggedUserAsync(Guid authUserId, string email);
     Task<IReadOnlyList<SectionResponse>> GetUserSectionsAsync(int userId);
 }
