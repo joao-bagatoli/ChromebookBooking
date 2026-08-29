@@ -1,5 +1,6 @@
 ﻿using ChromebookBooking.Api.Domain.Common.Constants;
 using ChromebookBooking.Api.Domain.Common.Enums;
+using ChromebookBooking.Api.Domain.Common.Exceptions;
 using ChromebookBooking.Api.Domain.Entities;
 using ChromebookBooking.Api.Domain.ValueObjects;
 
@@ -29,35 +30,23 @@ public class UserTests
         Assert.Null(user.AuthUserId);
     }
 
-    [Fact]
-    public void Deactivate_Should_Set_IsActive_To_False()
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void SetStatus_Should_Update_IsActive(bool isActive)
     {
         // Arrange
         var user = new User(CreateValidEmail(), UserRole.Teacher);
 
         // Act
-        user.Deactivate();
+        user.SetStatus(isActive);
 
         // Assert
-        Assert.False(user.IsActive);
+        Assert.Equal(isActive, user.IsActive);
     }
 
     [Fact]
-    public void Activate_Should_Set_IsActive_To_True()
-    {
-        // Arrange
-        var user = new User(CreateValidEmail(), UserRole.Teacher);
-        user.Deactivate();
-
-        // Act
-        user.Activate();
-
-        // Assert
-        Assert.True(user.IsActive);
-    }
-
-    [Fact]
-    public void ChangeRole_Should_Update_User_Role()
+    public void ChangeRole_Should_Update_UserRole()
     {
         // Arrange
         var user = new User(CreateValidEmail(), UserRole.Teacher);
@@ -68,6 +57,40 @@ public class UserTests
 
         // Assert
         Assert.Equal(newRole, user.Role);
+        Assert.False(user.IsTeacher);
+    }
+
+    [Fact]
+    public void ChangeRole_Should_Clear_Sections_When_Changing_From_Teacher_To_Admin()
+    {
+        // Arrange
+        var user = new User(CreateValidEmail(), UserRole.Teacher);
+        var sections = new List<Section>{ 
+            new Section("1º A"), 
+            new Section("2º B"), 
+            new Section("3º C") 
+        };
+        user.UpdateSections(sections);
+
+        // Act
+        user.ChangeRole(UserRole.Admin);
+
+        // Assert
+        Assert.Empty(user.Sections);
+    }
+
+    [Fact]
+    public void UpdateSections_NonTeacher_Should_Throw_Exception()
+    {
+        // Arrange
+        var user = new User(CreateValidEmail(), UserRole.Admin);
+        var sections = new List<Section>{ 
+            new Section("1º A"), 
+            new Section("2º B") 
+        };
+
+        // Act & Assert
+        Assert.Throws<DomainException>(() => user.UpdateSections(sections));
     }
 
     [Fact]

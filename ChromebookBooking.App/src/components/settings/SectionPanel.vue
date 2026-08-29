@@ -4,11 +4,22 @@ import { useSectionStore } from '@/stores/section'
 import DataTable from 'primevue/datatable'
 import Column from 'primevue/column'
 import Button from 'primevue/button'
+import Tag from 'primevue/tag'
 
 const sectionStore = useSectionStore()
 
-function editSection(data: any) {
-  console.log('Edit section', data)
+const emit = defineEmits(['edit'])
+
+function getSectionStatus(isActive: boolean) {
+  return isActive ? 'Ativa' : 'Inativa'
+}
+
+function getSectionStatusSeverity(isActive: boolean) {
+  return isActive ? 'success' : 'danger'
+}
+
+function onEditSection(data: any) {
+  emit('edit', data)
 }
 
 onMounted(async () => {
@@ -21,6 +32,15 @@ onMounted(async () => {
     <DataTable :value="sectionStore.sections">
       <Column field="name" header="Turma"></Column>
 
+      <Column field="isActive" header="Status">
+        <template #body="{ data }">
+          <Tag :value="getSectionStatus(data.isActive)"
+               :severity="getSectionStatusSeverity(data.isActive)"
+               rounded>
+          </Tag>
+        </template>
+      </Column>
+
       <Column header="Ações">
         <template #body="{ data }">
           <Button icon="pi pi-pencil"
@@ -29,7 +49,7 @@ onMounted(async () => {
                   severity="secondary"
                   arial-label="Editar"
                   title="Editar"
-                  @click="editSection(data)">
+                  @click="onEditSection(data)">
           </Button>
         </template>
       </Column>

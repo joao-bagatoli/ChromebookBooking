@@ -16,13 +16,17 @@ export default class UserService {
     return await this.httpClient.post(`${this.baseUrl}/users`, { email, role })
   }
 
-  async activateUser(id: number): Promise<void> {
-    return await this.httpClient.patch(`${this.baseUrl}/users/${id}/activate`, {})
+  async updateUser(id: number, payload: { role: UserRole, isActive: boolean }): Promise<void> {
+    return await this.httpClient.put(`${this.baseUrl}/users/${id}`, payload)
   }
 
-  async deactivateUser(id: number): Promise<void> {
-    return await this.httpClient.patch(`${this.baseUrl}/users/${id}/deactivate`, {})
-  }
+  //async activateUser(id: number): Promise<void> {
+  //  return await this.httpClient.patch(`${this.baseUrl}/users/${id}/activate`, {})
+  //}
+
+  //async deactivateUser(id: number): Promise<void> {
+  //  return await this.httpClient.patch(`${this.baseUrl}/users/${id}/deactivate`, {})
+  //}
 
   async getLoggedUser(): Promise<LoggedUser> {
     return await this.httpClient.get(`${this.baseUrl}/users/me`)

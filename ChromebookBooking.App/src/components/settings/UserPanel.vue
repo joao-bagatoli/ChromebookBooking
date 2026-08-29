@@ -9,6 +9,8 @@
 
   const userStore = useUserStore()
 
+  const emit = defineEmits(['edit'])
+
   function getUserStatus(isActive: boolean) {
     return isActive ? 'Ativo' : 'Inativo'
   }
@@ -17,8 +19,8 @@
     return isActive ? 'success' : 'danger'
   }
 
-  function editUser(data: any) {
-    console.log('edit user', data);
+  function onEditUser(data: any) {
+    emit('edit', data)
   }
 
   onMounted(async () => {
@@ -57,7 +59,7 @@
                   severity="secondary"
                   arial-label="Editar"
                   title="Editar"
-                  @click="editUser(data)">
+                  @click="onEditUser(data)">
           </Button>
         </template>
       </Column>

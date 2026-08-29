@@ -13,6 +13,7 @@ export const useUserStore = defineStore('user', () => {
       users.value = await userService.getAllUsers()
     } catch (error) {
       console.error('Error loading users:', error)
+      throw error
     }
   }
 
@@ -22,12 +23,28 @@ export const useUserStore = defineStore('user', () => {
       users.value.push(newUser)
     } catch (error) {
       console.error('Error creating user:', error)
+      throw error
+    }
+  }
+
+  async function updateUser(id: number, payload: { role: UserRole, isActive: boolean }) {
+    try {
+      await userService.updateUser(id, payload)
+      const user = users.value.find(u => u.id == id)
+      if (user) {
+        user.role = payload.role
+        user.isActive = payload.isActive
+      }
+    } catch (error) {
+      console.error('Error updating user:', error)
+      throw error
     }
   }
 
   return {
     users,
     loadUsers,
-    addUser
+    addUser,
+    updateUser
   }
 })
