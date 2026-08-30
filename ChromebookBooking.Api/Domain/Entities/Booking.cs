@@ -31,6 +31,9 @@ public sealed class Booking
     [Required]
     public bool IsPartial { get; private set; }
 
+    // ALTER TABLE
+    public int? ChromebooksQuantity { get; private set; }
+
     [Required]
     public bool IsCancelled { get; private set; }
 
@@ -39,14 +42,32 @@ public sealed class Booking
 
     private Booking() { }
 
-    public Booking(DateOnly date, int classPeriodId, int cabinetId, int teacherId, int sectionId, bool isPartial = false)
+    public Booking(
+        DateOnly date, 
+        int classPeriodId, 
+        int cabinetId, 
+        int teacherId, 
+        int sectionId, 
+        bool isPartial = false, 
+        int? chromebooksQuantity = null)
     {
+        if (isPartial && (chromebooksQuantity is null || chromebooksQuantity <= 0))
+        {
+            throw new DomainException("Uma reserva parcial exige a quantidade exata de chromebooks");
+        }
+
+        if (!isPartial && chromebooksQuantity is not null)
+        {
+            throw new DomainException("A quantidade de chromebooks só pode ser informada para reservas parciais");
+        }
+
         Date = date;
         ClassPeriodId = classPeriodId;
         CabinetId = cabinetId;
         TeacherId = teacherId;
         SectionId = sectionId;
         IsPartial = isPartial;
+        ChromebooksQuantity = chromebooksQuantity;
         IsCancelled = false;
         CreatedAt = DateTime.UtcNow;
     }
