@@ -74,10 +74,6 @@ public sealed class Booking
 
     public void Cancel()
     {
-        if (IsCancelled)
-        {
-            throw new DomainException("Esta reserva já está cancelada");
-        }
         IsCancelled = true;
     }
 }
