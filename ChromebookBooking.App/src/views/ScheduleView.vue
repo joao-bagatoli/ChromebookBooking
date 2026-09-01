@@ -1,7 +1,10 @@
-<script setup lang="ts"></script>
+<script setup lang="ts">
+import ScheludeCalendar from "@/components/schedule/ScheduleCalendar.vue"
+
+</script>
 
 <template>
-  <h1>Schedule</h1>
+  <ScheludeCalendar></ScheludeCalendar>
 </template>
 
 <style scoped>
