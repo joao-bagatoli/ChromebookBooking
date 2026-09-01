@@ -37,6 +37,8 @@ app.UseExceptionHandler();
 
 app.UseCors("Dev");
 
+app.MapGet("/health", () => Results.Ok(new { status = "ok", timestamp = DateTime.UtcNow }));
+
 app.UseAuthentication();
 app.UseAuthorization();
 
