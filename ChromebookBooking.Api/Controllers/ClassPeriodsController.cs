@@ -1,4 +1,5 @@
 ﻿using ChromebookBooking.Api.Interfaces;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace ChromebookBooking.Api.Controllers;
@@ -15,6 +16,7 @@ public sealed class ClassPeriodsController : ControllerBase
     }
 
     [HttpGet]
+    [Authorize]
     public async Task<IActionResult> GetAllClassPeriods()
     {
         var classPeriods = await _service.GetAllClassPeriodsAsync();
