@@ -1,4 +1,5 @@
-﻿using ChromebookBooking.Api.DTOs;
+﻿using ChromebookBooking.Api.Domain.Entities;
+using ChromebookBooking.Api.DTOs;
 using ChromebookBooking.Api.Infrastructure;
 using ChromebookBooking.Api.Interfaces;
 using Microsoft.EntityFrameworkCore;
@@ -28,4 +29,5 @@ public sealed class ClassPeriodService : IClassPeriodService
             ))
             .ToListAsync();
     }
+
 }
