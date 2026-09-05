@@ -69,4 +69,34 @@ public sealed class BookingService : IBookingService
         Cabinet allocated = _allocator.Allocate(classPeriodId, sectionId, activeCabinets, todaysBooking);
         return allocated;
     }
+
+    public async Task CancelBookingAsync(int bookingId, Guid authUserId)
+    {
+        User? loggedUser = await _context.Users
+            .AsNoTracking()
+            .Where(u => u.AuthUserId == authUserId)
+            .FirstOrDefaultAsync();
+
+        if (loggedUser is null)
+        {
+            throw new UnauthorizedAccessException("Usuário não encontrado");
+        }
+
+        Booking? booking = await _context.Bookings.FindAsync(bookingId);
+
+        if (booking is null)
+        {
+            throw new KeyNotFoundException("Reserva não encontrada");
+        }
+
+        bool isOwner = booking.TeacherId == loggedUser.Id;
+
+        if (!isOwner && !loggedUser.IsAdmin)
+        {
+            throw new UnauthorizedAccessException("Usuário não autorizado a cancelar esta reserva");
+        }
+
+        booking.Cancel();
+        await _context.SaveChangesAsync();
+    }
 }
