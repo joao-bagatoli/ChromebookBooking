@@ -15,6 +15,7 @@ public sealed class Booking
 
     [Required]
     public int ClassPeriodId { get; private set; }
+    public ClassPeriod? ClassPeriod { get; private set; }
 
     [Required]
     public int CabinetId { get; private set; }
