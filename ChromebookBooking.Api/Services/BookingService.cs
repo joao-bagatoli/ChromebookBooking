@@ -1,5 +1,6 @@
 ﻿using ChromebookBooking.Api.Domain.Entities;
 using ChromebookBooking.Api.Domain.Services;
+using ChromebookBooking.Api.DTOs;
 using ChromebookBooking.Api.Infrastructure;
 using ChromebookBooking.Api.Interfaces;
 using Microsoft.EntityFrameworkCore;
@@ -98,5 +99,32 @@ public sealed class BookingService : IBookingService
 
         booking.Cancel();
         await _context.SaveChangesAsync();
+    }
+
+    public async Task<IReadOnlyList<BookingResponse>> GetWeeklyBookingsAsync(DateOnly startDate, DateOnly endDate)
+    {
+        if (startDate > endDate)
+        {
+            throw new ArgumentException("A data inicial não pode ser maior que a data final");
+        }
+
+        return await _context.Bookings
+            .AsNoTracking()
+            .Where(b => b.Date >= startDate && b.Date <= endDate && !b.IsCancelled)
+            .OrderBy(b => b.Date)
+            .ThenBy(b => b.ClassPeriod!.StartTime)
+            .Select(b => new BookingResponse(
+                b.Id,
+                b.Date,
+                b.ClassPeriodId,
+                b.ClassPeriod!.Name,
+                b.CabinetId,
+                b.Cabinet!.Name,
+                b.Teacher!.Email.Value,
+                b.Section!.Name,
+                b.IsPartial,
+                b.ChromebooksQuantity
+            ))
+            .ToListAsync();
     }
 }
