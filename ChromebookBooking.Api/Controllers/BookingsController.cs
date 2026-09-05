@@ -1,4 +1,5 @@
 ﻿using ChromebookBooking.Api.DTOs;
+using ChromebookBooking.Api.Extensions;
 using ChromebookBooking.Api.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -36,5 +37,14 @@ public sealed class BookingsController : ControllerBase
             request.IsPartial, 
             request.ChromebooksQuantity);
         return Ok();
+    }
+
+    [HttpPatch("{id}/cancel")]
+    [Authorize]
+    public async Task<IActionResult> CancelBooking(int id)
+    {
+        Guid authUserId = User.GetUserId();
+        await _service.CancelBookingAsync(id, authUserId);
+        return NoContent();
     }
 }

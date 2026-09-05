@@ -1,6 +1,4 @@
-﻿using ChromebookBooking.Api.DTOs;
-
-namespace ChromebookBooking.Api.Interfaces;
+﻿namespace ChromebookBooking.Api.Interfaces;
 
 public interface IBookingService
 {
