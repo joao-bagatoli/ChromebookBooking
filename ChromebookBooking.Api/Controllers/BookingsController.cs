@@ -16,6 +16,14 @@ public sealed class BookingsController : ControllerBase
         _service = service;
     }
 
+    [HttpGet]
+    [Authorize]
+    public async Task<IActionResult> GetWeeklyBookings(DateOnly startDate, DateOnly endDate)
+    {
+        var bookings = _service.GetWeeklyBookingsAsync(startDate, endDate);
+        return Ok(bookings);
+    }
+
     [HttpPost]
     [Authorize]
     public async Task<IActionResult> BookChromebooks(BookRequest request)

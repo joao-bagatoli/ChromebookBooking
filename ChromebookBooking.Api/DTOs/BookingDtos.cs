@@ -7,3 +7,15 @@ public sealed record BookRequest(
     int SectionId, 
     bool IsPartial, 
     int? ChromebooksQuantity);
+
+public sealed record BookingResponse(
+    int Id,
+    DateOnly Date,
+    int ClassPeriodId,
+    string ClassPeriodName,
+    int CabinetId,
+    string CabinetName, 
+    string TeacherEmail,
+    string SectionName,
+    bool IsPartial,
+    int? ChromebooksQuantity);
