@@ -47,4 +47,6 @@ public sealed class BookingsController : ControllerBase
         await _service.CancelBookingAsync(id, authUserId);
         return NoContent();
     }
+
+    // teste
 }
