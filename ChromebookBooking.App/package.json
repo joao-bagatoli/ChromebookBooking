@@ -16,6 +16,8 @@
   "dependencies": {
     "@primeuix/themes": "^2.0.3",
     "@supabase/supabase-js": "^2.103.0",
+    "@svar-ui/vue-calendar": "^2.6.0",
+    "@svar-ui/vue-core": "^2.6.0",
     "axios": "^1.14.0",
     "pinia": "^3.0.4",
     "primeicons": "^7.0.0",

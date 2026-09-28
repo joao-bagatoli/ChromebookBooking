@@ -1,5 +1,7 @@
 import './assets/styles/main.css'
 import 'primeicons/primeicons.css'
+import '@svar-ui/vue-calendar/all.css'
+
 import { createApp } from 'vue'
 import App from './App.vue'
 import PrimeVue from 'primevue/config'
