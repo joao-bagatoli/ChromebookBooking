@@ -42,6 +42,19 @@ body {
     gap: 0.5rem;
 }
 
+.checkbox-group {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    margin-top: 0.5rem;
+}
+
+.checkbox-item {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
 .inline-group {
     flex-direction: row;
     align-items: center;

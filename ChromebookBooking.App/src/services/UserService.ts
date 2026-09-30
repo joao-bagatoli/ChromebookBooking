@@ -12,11 +12,11 @@ export default class UserService {
     return await this.httpClient.get(`${this.baseUrl}/users/${id}`)
   }
 
-  async createUser(email: string, role: UserRole): Promise<User> {
-    return await this.httpClient.post(`${this.baseUrl}/users`, { email, role })
+  async createUser(email: string, role: UserRole, sectionIds: number[]): Promise<User> {
+    return await this.httpClient.post(`${this.baseUrl}/users`, { email, role, sectionIds })
   }
 
-  async updateUser(id: number, payload: { role: UserRole, isActive: boolean }): Promise<void> {
+  async updateUser(id: number, payload: { role: UserRole, isActive: boolean, sectionIds: number[] }): Promise<void> {
     return await this.httpClient.put(`${this.baseUrl}/users/${id}`, payload)
   }
 

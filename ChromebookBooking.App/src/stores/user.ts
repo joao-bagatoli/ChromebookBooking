@@ -17,9 +17,9 @@ export const useUserStore = defineStore('user', () => {
     }
   }
 
-  async function addUser(email: string, role: UserRole) {
+  async function addUser(email: string, role: UserRole, sectionIds: number[]) {
     try {
-      const newUser = await userService.createUser(email, role)
+      const newUser = await userService.createUser(email, role, sectionIds)
       users.value.push(newUser)
     } catch (error) {
       console.error('Error creating user:', error)
@@ -27,7 +27,7 @@ export const useUserStore = defineStore('user', () => {
     }
   }
 
-  async function updateUser(id: number, payload: { role: UserRole, isActive: boolean }) {
+  async function updateUser(id: number, payload: { role: UserRole, isActive: boolean, sectionIds: number[] }) {
     try {
       await userService.updateUser(id, payload)
       const user = users.value.find(u => u.id == id)

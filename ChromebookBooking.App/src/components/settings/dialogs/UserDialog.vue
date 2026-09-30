@@ -7,7 +7,10 @@ import Button from 'primevue/button'
 import InputText from 'primevue/inputtext'
 import SelectButton from 'primevue/selectbutton'
 import ToggleSwitch from 'primevue/toggleswitch'
+import Checkbox from 'primevue/checkbox'
 import { useToast } from 'primevue/usetoast'
+import type { Section } from '../../../types/section'
+import { useSectionStore } from '../../../stores/section'
 
 const visible = defineModel<boolean>('visible', { default: false })
 
@@ -16,13 +19,16 @@ const props = defineProps<{
 }>()
 
 const userStore = useUserStore()
+const sectionStore = useSectionStore()
 const toast = useToast() 
 
 const isLoading = ref(false)
+
 const form = ref({
   email: '',
   role: 'Teacher',
-  isActive: false
+  isActive: false,
+  sectionIds: [] as number[]
 })
 
 const roleOptions = ref([
@@ -30,10 +36,13 @@ const roleOptions = ref([
   { label: 'Admin', value: 'Admin' }
 ])
 
+const activeSections = computed(() => sectionStore.sections.filter(s => s.isActive))
+
 function clearForm() {
   form.value.email = ''
   form.value.role = 'Teacher'
   form.value.isActive = false
+  form.value.sectionIds = []
 }
 
 watch(() => props.item, (newVal) => {
@@ -41,10 +50,17 @@ watch(() => props.item, (newVal) => {
     form.value.email = newVal.email
     form.value.role = newVal.role
     form.value.isActive = newVal.isActive ?? false
+    form.value.sectionIds = newVal.sections?.map(s => s.id) || []
   } else {
     clearForm()
   }
 }, { immediate: true })
+
+// watch(visible, async (isVisible) => {
+//   if (isVisible) {
+//     sectionStore.loadSections()
+//   }
+// })
 
 const isEditing = computed(() => props.item !== null && props.item !== undefined)
 
@@ -54,8 +70,10 @@ function closeDialog() {
   visible.value = false
 }
 
+const isTeacher = computed(() => form.value.role === 'Teacher')
+
 const handleSave = async () => {
-  if (!form.value.email && !isEditing) {
+  if (!form.value.email && !isEditing.value) {
     toast.add({
       severity: 'warn',
       summary: 'Aviso',
@@ -77,11 +95,14 @@ const handleSave = async () => {
 
   try {
     isLoading.value = true
+
+    const finalSectionIds = isTeacher.value ? form.value.sectionIds : []
+
     if (isEditing.value) {
       await userStore.updateUser(props.item!.id, {
         role: form.value.role as UserRole,
-        // sections: [], // até vincular user a section
-        isActive: form.value.isActive
+        isActive: form.value.isActive,
+        sectionIds: finalSectionIds
       })
       toast.add({
         severity: 'success',
@@ -90,7 +111,7 @@ const handleSave = async () => {
         life: 3000
       })
     } else {
-      await userStore.addUser(form.value.email, form.value.role as UserRole)
+      await userStore.addUser(form.value.email, form.value.role as UserRole, finalSectionIds)
       toast.add({
         severity: 'success',
         summary: 'Sucesso',
@@ -128,6 +149,15 @@ const handleSave = async () => {
                       optionLabel="label"
                       optionValue="value"
                       :disabled="isLoading" />
+      </div>
+      <div v-if="isTeacher" class="form-group">
+        <label>Turmas Ativas</label>
+        <div class="checkbox-group">
+          <div v-for="section in activeSections" :key="section.id" class="checkbox-item">
+            <Checkbox v-model="form.sectionIds" :inputId="`section_${section.id}`" :value="section.id" :disabled="isLoading" />
+            <label :for="`section_${section.id}`">{{ section.name }}</label>
+          </div>
+        </div>
       </div>
       <div v-if="isEditing" class="form-group inline-group">
         <label for="active">Ativo</label>
