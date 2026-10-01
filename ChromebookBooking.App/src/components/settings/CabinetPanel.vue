@@ -1,13 +1,17 @@
 <script setup lang="ts">
-import { onMounted, ref } from 'vue'
+import { onMounted, ref, computed } from 'vue'
 import { useCabinetStore } from '@/stores/cabinet'
 import type { Cabinet } from '@/types/cabinet'
 import DataTable from 'primevue/datatable'
 import Column from 'primevue/column'
 import Button from 'primevue/button'
 import Tag from 'primevue/tag'
-import Toast from 'primevue/toast' // Import do Toast
+import Toast from 'primevue/toast'
 import CabinetDialog from '@/components/settings/dialogs/CabinetDialog.vue'
+
+const props = defineProps<{
+  search: string
+}>()
 
 const cabinetStore = useCabinetStore()
 const dialogVisible = ref(false)
@@ -18,6 +22,14 @@ const columns = [
   { field: 'isActive', header: 'Status' },
   { field: 'action', header: 'Ações' }
 ]
+
+const filteredCabinets = computed(() => {
+  const query = props.search.toLowerCase()
+  if (!query) return cabinetStore.cabinets
+  return cabinetStore.cabinets.filter((cabinet) => {
+    return cabinet.name.toLowerCase().includes(query)
+  })
+})
 
 onMounted(async () => {
   await cabinetStore.getAllCabinets()
@@ -40,7 +52,7 @@ const handleDialogClose = () => {
     <!-- Componente Toast posicionado no canto inferior direito -->
     <Toast position="bottom-right" />
 
-    <DataTable :value="cabinetStore.cabinets"
+    <DataTable :value="filteredCabinets"
                responsiveLayout="scroll"
                class="custom-table">
       <Column v-for="(col, index) in columns"
