@@ -1,11 +1,15 @@
 <script setup lang="ts">
-  import { onMounted } from 'vue'
+  import { onMounted, computed } from 'vue'
   import { useUserStore } from '@/stores/user'
   import DataTable from 'primevue/datatable'
   import Column from 'primevue/column'
   import Tag from 'primevue/tag'
   import Button from 'primevue/button'
   import { getRoleSeverity, getRoleLabel } from '../../utils/userUtils'
+
+  const props = defineProps<{
+    search: string
+  }>()
 
   const userStore = useUserStore()
 
@@ -23,6 +27,14 @@
     emit('edit', data)
   }
 
+  const filteredUsers = computed(() => {
+    const query = props.search.toLowerCase()
+    if (!query) return userStore.users
+    return userStore.users.filter((user) => {
+        return user.email.toLowerCase().includes(query) || getRoleLabel(user.role).toLowerCase().includes(query)
+    })
+  })
+
   onMounted(async () => {
     await userStore.loadUsers()
   })
@@ -30,7 +42,7 @@
 
 <template>
   <div>
-    <DataTable :value="userStore.users">
+    <DataTable :value="filteredUsers">
       <Column field="email" header="E-mail"></Column>
 
       <Column field="role" header="Perfil">
