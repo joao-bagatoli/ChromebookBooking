@@ -26,6 +26,14 @@ const columns = [
   { field: 'action', header: 'Ações' }
 ]
 
+function getCabinetStatus(isActive: boolean) {
+  return isActive ? 'Ativo' : 'Inativo'
+}
+
+function getCabinetStatusSeverity(isActive: boolean) {
+  return isActive ? 'success' : 'danger'
+}
+
 const filteredCabinets = computed(() => {
   const query = props.search.toLowerCase()
   if (!query) return cabinetStore.cabinets
@@ -98,10 +106,10 @@ const handleDialogClose = () => {
           </template>
 
           <template v-else-if="col.field === 'isActive'">
-            <span class="status-badge"
-                  :class="slotProps.data.isActive ? 'active' : 'inactive'">
-              {{ slotProps.data.isActive ? 'Ativo' : 'Inativo' }}
-            </span>
+            <Tag :value="getCabinetStatus(slotProps.data.isActive)"
+                 :severity="getCabinetStatusSeverity(slotProps.data.isActive)"
+                 rounded>
+            </Tag>
           </template>
 
           <template v-else>
@@ -121,37 +129,5 @@ const handleDialogClose = () => {
   .table-container {
     width: 100%;
     overflow-x: auto;
-  }
-
-  .status-badge {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    padding: 4px 12px;
-    border-radius: 20px;
-    font-size: 0.85rem;
-    font-weight: 600;
-    line-height: 1;
-  }
-
-    .status-badge.active {
-      background-color: #e8f8f0;
-      color: #22c55e;
-    }
-
-    .status-badge.inactive {
-      background-color: #fde8e8;
-      color: #ef4444;
-    }
-
-  :deep(.p-datatable-tbody > tr > td) {
-    padding: 1rem 0.75rem;
-  }
-
-  @media (max-width: 640px) {
-    :deep(.p-datatable-tbody > tr > td) {
-      padding: 0.75rem 0.5rem;
-      font-size: 0.9rem;
-    }
   }
 </style>
