@@ -82,4 +82,12 @@ public sealed class UsersController : ControllerBase
         return Ok(sections);
     }
 
+    [HttpDelete("{id}")]
+    [Authorize(Roles = nameof(UserRole.Admin))]
+    public async Task<IActionResult> DeleteUser(int id)
+    {
+        await _service.DeleteUserAsync(id);
+        return NoContent();
+    }
+
 }

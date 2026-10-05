@@ -32,4 +32,8 @@ export default class UserService {
     return await this.httpClient.get(`${this.baseUrl}/users/me`)
   }
 
+  async deleteUser(id: number): Promise<void> {
+    return await this.httpClient.delete(`${this.baseUrl}/users/${id}`)
+  }
+
 }
