@@ -8,6 +8,7 @@ import Button from 'primevue/button'
 import Tag from 'primevue/tag'
 import Toast from 'primevue/toast'
 import CabinetDialog from '@/components/settings/dialogs/CabinetDialog.vue'
+import { useToast } from 'primevue/usetoast'
 
 const props = defineProps<{
   search: string
@@ -16,6 +17,8 @@ const props = defineProps<{
 const cabinetStore = useCabinetStore()
 const dialogVisible = ref(false)
 const selectedCabinet = ref<Cabinet | null>(null)
+
+const toast = useToast()
 
 const columns = [
   { field: 'name', header: 'Nome' },
@@ -40,6 +43,25 @@ const editCabinet = (cabinet: Cabinet) => {
   dialogVisible.value = true
 }
 
+const deleteCabinet = async (cabinet: Cabinet) => {
+  try {
+    await cabinetStore.deleteCabinet(cabinet.id)
+    toast.add({
+      severity: 'success',
+      summary: 'Sucesso',
+      detail: 'Gabinete deletado com sucesso!',
+      life: 3000
+    })
+  } catch {
+    toast.add({
+      severity: 'error',
+      summary: 'Erro',
+      detail: 'Não foi possível deletar o gabinete.',
+      life: 3000
+    })
+  }
+}
+
 const handleDialogClose = () => {
   if (!dialogVisible.value) {
     selectedCabinet.value = null
@@ -61,11 +83,18 @@ const handleDialogClose = () => {
               :header="col.header">
         <template #body="slotProps">
           <template v-if="col.field === 'action'">
-            <Button icon="pi pi-pencil"
-                    severity="secondary"
-                    text
-                    rounded
-                    @click="editCabinet(slotProps.data)" />
+            <div class="table-actions">
+              <Button icon="pi pi-pencil"
+                      severity="secondary"
+                      text
+                      rounded
+                      @click="editCabinet(slotProps.data)" />
+              <Button icon="pi pi-trash"
+                      severity="danger"
+                      text
+                      rounded
+                      @click="deleteCabinet(slotProps.data)" />
+            </div>
           </template>
 
           <template v-else-if="col.field === 'isActive'">
