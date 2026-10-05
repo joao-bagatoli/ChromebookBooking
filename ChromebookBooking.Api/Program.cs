@@ -21,7 +21,6 @@ builder.Services.AddExceptionHandler();
 builder.Services.AddCorsPolicy(builder.Configuration);
 builder.Services.AddSecuritySettings(builder.Configuration);
 
-
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
 
 builder.Services.AddHealthChecks()

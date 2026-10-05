@@ -1,10 +1,14 @@
 <script setup lang="ts">
-import { onMounted } from 'vue'
+import { onMounted, computed } from 'vue'
 import { useSectionStore } from '@/stores/section'
 import DataTable from 'primevue/datatable'
 import Column from 'primevue/column'
 import Button from 'primevue/button'
 import Tag from 'primevue/tag'
+
+const props = defineProps<{
+    search: string
+}>()
 
 const sectionStore = useSectionStore()
 
@@ -22,6 +26,14 @@ function onEditSection(data: any) {
   emit('edit', data)
 }
 
+const filteredSections = computed(() => {
+  const query = props.search.toLowerCase()
+  if (!query) return sectionStore.sections
+  return sectionStore.sections.filter((section) => {
+    return section.name.toLowerCase().includes(query)
+  })
+})
+
 onMounted(async () => {
   await sectionStore.loadSections()
 })
@@ -29,7 +41,7 @@ onMounted(async () => {
 
 <template>
   <div>
-    <DataTable :value="sectionStore.sections">
+    <DataTable :value="filteredSections">
       <Column field="name" header="Turma"></Column>
 
       <Column field="isActive" header="Status">

@@ -5,6 +5,9 @@
   import TabPanels from 'primevue/tabpanels'
   import TabPanel from 'primevue/tabpanel'
   import Button from 'primevue/button'
+  import IconField from 'primevue/iconfield'
+  import InputIcon from 'primevue/inputicon'
+  import InputText from 'primevue/inputtext'
 
   import UserPanel from '@/components/settings/UserPanel.vue'
   import SectionPanel from '@/components/settings/SectionPanel.vue'
@@ -52,6 +55,7 @@
 
   const isDialogVisible = ref(false)
   const itemToEdit = ref<any>(null)
+  const searchQuery = ref('')
 
   const currentActiveSettings = computed(() => {
     return settingPanels.value.find(p => p.key === activePanel.value)
@@ -78,8 +82,14 @@
         <h1 class="view-title">Configurações</h1>
         <p class="view-subtitle">Gerencie usuários, turmas e gabinetes</p>
       </div>
+    </div>
 
-      <Button :label="addButtonLabel" icon="pi pi-plus" @click="handleAdd" />
+    <div class="header-actions">
+      <IconField>
+        <InputIcon class="pi pi-search" />
+        <InputText v-model="searchQuery" placeholder="Pesquisar..." size="small" />
+      </IconField>
+      <Button :label="addButtonLabel" icon="pi pi-plus" size="small" @click="handleAdd" />
     </div>
 
     <Tabs :value="activePanel" @update:value="(val) => activePanel = String(val)" class="tabs-container">
@@ -91,7 +101,7 @@
 
       <TabPanels>
         <TabPanel v-for="panel in settingPanels" :key="panel.key" :value="panel.key">
-          <component :is="panel.component" @edit="handleEdit" />
+          <component :is="panel.component" :search="searchQuery" @edit="handleEdit" />
         </TabPanel>
       </TabPanels>
     </Tabs>
@@ -108,7 +118,13 @@
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding-top: 50px;
+  }
+
+  .header-actions {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      margin-top: 1rem;
   }
 
   .tabs-container {
