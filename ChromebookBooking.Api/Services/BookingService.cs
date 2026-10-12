@@ -113,18 +113,34 @@ public sealed class BookingService : IBookingService
             .Where(b => b.Date >= startDate && b.Date <= endDate && !b.IsCancelled)
             .OrderBy(b => b.Date)
             .ThenBy(b => b.ClassPeriod!.StartTime)
-            .Select(b => new BookingResponse(
-                b.Id,
-                b.Date,
-                b.ClassPeriodId,
-                b.ClassPeriod!.Name,
-                b.CabinetId,
-                b.Cabinet!.Name,
-                b.Teacher!.Email.Value,
-                b.Section!.Name,
-                b.IsPartial,
-                b.ChromebooksQuantity
-            ))
+            .Select(b => ToResponse(b))
             .ToListAsync();
+    }
+
+    public async Task<IReadOnlyList<BookingResponse>> GetBookingsAsync()
+    {
+        return await _context.Bookings
+            .AsNoTracking()
+            .Where(b => !b.IsCancelled)
+            .OrderBy(b => b.Date)
+            .ThenBy(b => b.ClassPeriod!.StartTime)
+            .Select(b => ToResponse(b))
+            .ToListAsync();
+    }
+
+    private static BookingResponse ToResponse(Booking booking)
+    {
+        return new BookingResponse(
+            booking.Id,
+            booking.Date,
+            booking.ClassPeriodId,
+            booking.ClassPeriod!.Name,
+            booking.CabinetId,
+            booking.Cabinet!.Name,
+            booking.Teacher!.Email.Value,
+            booking.Section!.Name,
+            booking.IsPartial,
+            booking.ChromebooksQuantity
+        );
     }
 }
