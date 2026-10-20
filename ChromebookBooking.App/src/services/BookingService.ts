@@ -17,6 +17,10 @@ export default class BookingService {
     return await this.httpClient.post(`${this.baseUrl}/bookings`, payload)
   }
 
+  async getBookings(): Promise<Booking[]> {
+    return await this.httpClient.get(`${this.baseUrl}/bookings`)
+  }
+
   async cancel(bookingId: number): Promise<void> {
     return await this.httpClient.patch(`${this.baseUrl}/bookings/${bookingId}/cancel`, undefined)
   }

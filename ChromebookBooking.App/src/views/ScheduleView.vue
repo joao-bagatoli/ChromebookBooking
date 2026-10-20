@@ -249,7 +249,7 @@ async function confirmReservation(form: { sectionId: number; discipline: string 
   }
 }
 
-async function cancelBooking(bookingId: number) {
+async function cancel(bookingId: number) {
   if (!window.confirm('Cancelar esta reserva?')) return
 
   try {
@@ -286,7 +286,7 @@ async function cancelBooking(bookingId: number) {
                       @go-to-today="goToToday"
                       @select-slot="selectSlot"
                       @open-reservation="openReservation"
-                      @cancel-booking="cancelBooking" />
+                      @cancel-booking="cancel" />
 
     <p v-if="loadError"
        class="page-error">
