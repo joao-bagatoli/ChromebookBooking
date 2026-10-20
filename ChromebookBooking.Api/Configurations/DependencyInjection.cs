@@ -47,7 +47,7 @@ public static class DependencyInjection
 
         services.AddCors(options =>
         {
-            options.AddPolicy("Dev", policy =>
+            options.AddPolicy("*", policy =>
             {
                 policy.WithOrigins(origin!)
                       .AllowAnyHeader()

@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import { reactive } from 'vue'
+
 interface Period {
   id: number
   label: string
@@ -23,41 +25,45 @@ interface ReservationDialog {
   period: Period
 }
 
-interface ReservationForm {
-  sectionId: number | null
-  discipline: string
-}
-
 const props = defineProps<{
   reservationDialog: ReservationDialog
-  reservationForm: ReservationForm
   sections: Section[]
   loggedTeacherName: string
   availableCabinets: {
     id: number
     name: string
   }[]
+  saving: boolean
+  error: string | null
 }>()
 
 const emit = defineEmits<{
   close: []
-  confirm: []
+  confirm: [form: { sectionId: number; discipline: string }]
 }>()
 
-const dayNumberFormatter =
-  new Intl.DateTimeFormat(
-    'pt-BR',
-    {
-      day: '2-digit',
-    },
-  )
+// Estado do formulário fica dentro do modal (não altera props)
+const form = reactive({
+  sectionId: null as number | null,
+  discipline: '',
+})
 
-function formatDayNumber(
-  date: Date,
-) {
-  return dayNumberFormatter.format(
-    date,
-  )
+const dateFormatter = new Intl.DateTimeFormat('pt-BR', {
+  day: '2-digit',
+  month: '2-digit',
+  year: 'numeric',
+})
+
+function formatDate(date: Date) {
+  return dateFormatter.format(date)
+}
+
+function submit() {
+  if (!form.sectionId) return
+  emit('confirm', {
+    sectionId: form.sectionId,
+    discipline: form.discipline,
+  })
 }
 </script>
 
@@ -105,17 +111,7 @@ function formatDayNumber(
           </span>
 
           <strong>
-            {{
-              formatDayNumber(
-                props.reservationDialog.day.date,
-              )
-            }}/{{
-              String(
-                props.reservationDialog.day.date.getMonth() + 1,
-              ).padStart(2, '0')
-            }}/{{
-              props.reservationDialog.day.date.getFullYear()
-            }}
+            {{ formatDate(props.reservationDialog.day.date) }}
           </strong>
 
         </div>
@@ -127,15 +123,11 @@ function formatDayNumber(
           </span>
 
           <strong>
-            {{
-              props.reservationDialog.period.label
-            }}
+            {{ props.reservationDialog.period.label }}
           </strong>
 
           <small>
-            {{
-              props.reservationDialog.period.time
-            }}
+            {{ props.reservationDialog.period.time }}
           </small>
 
         </div>
@@ -167,9 +159,8 @@ function formatDayNumber(
         </label>
 
         <select id="reservation-section"
-                v-model.number="
-            props.reservationForm.sectionId
-          ">
+                v-model.number="form.sectionId"
+                :disabled="props.saving">
 
           <option :value="null">
             Selecione...
@@ -195,11 +186,10 @@ function formatDayNumber(
         </label>
 
         <input id="reservation-discipline"
-               v-model="
-            props.reservationForm.discipline
-          "
+               v-model="form.discipline"
                type="text"
-               placeholder="Ex: Matemática" />
+               placeholder="Ex: Matemática"
+               :disabled="props.saving" />
 
       </div>
 
@@ -211,44 +201,41 @@ function formatDayNumber(
 
           O sistema associará
           automaticamente
-
-          <strong>
-            {{
-              props.availableCabinets[0]?.name ??
-              'um gabinete'
-            }}
-          </strong>
-
+          um gabinete disponível
           para você.
 
         </span>
 
       </div>
 
-      <p v-if="
-          props.availableCabinets.length === 0
-        "
+      <p v-if="props.availableCabinets.length === 0"
          class="no-cabinets-message">
         Não há gabinetes
         disponíveis neste horário.
+      </p>
+
+      <p v-if="props.error"
+         class="error-message"
+         role="alert">
+        {{ props.error }}
       </p>
 
       <footer class="modal-footer">
 
         <button class="secondary-modal-button"
                 type="button"
+                :disabled="props.saving"
                 @click="emit('close')">
           Cancelar
         </button>
 
         <button class="primary-modal-button"
                 type="button"
-                :disabled="
-            !props.reservationForm.sectionId ||
-            props.availableCabinets.length === 0
-          "
-                @click="emit('confirm')">
-          Confirmar Reserva
+                :disabled="!form.sectionId ||
+                  props.availableCabinets.length === 0 ||
+                  props.saving"
+                @click="submit">
+          {{ props.saving ? 'Reservando...' : 'Confirmar Reserva' }}
         </button>
 
       </footer>
@@ -387,6 +374,12 @@ function formatDayNumber(
         box-shadow: 0 0 0 2px rgb(78 141 211 / 0.12);
       }
 
+      .form-field input:disabled,
+      .form-field select:disabled {
+        background: var(--p-surface-50);
+        cursor: not-allowed;
+      }
+
   .teacher-field {
     display: flex;
     align-items: center;
@@ -423,13 +416,15 @@ function formatDayNumber(
       color: #4e8dd3;
     }
 
-    .assignment-info strong {
-      color: #3573c2;
-    }
-
   .no-cabinets-message {
     margin: 0.65rem 0 0;
     color: #c77929;
+    font-size: 0.68rem;
+  }
+
+  .error-message {
+    margin: 0.65rem 0 0;
+    color: #c0392b;
     font-size: 0.68rem;
   }
 
@@ -457,8 +452,13 @@ function formatDayNumber(
     background: var(--p-surface-0);
   }
 
-    .secondary-modal-button:hover {
+    .secondary-modal-button:hover:not(:disabled) {
       background: var(--p-surface-50);
+    }
+
+    .secondary-modal-button:disabled {
+      cursor: not-allowed;
+      opacity: 0.6;
     }
 
   .primary-modal-button {
