@@ -20,7 +20,7 @@
   const fetchBookings = async () => {
     loading.value = true
     try {
-      await bookingStore.getBookings()
+      await bookingStore.fetchAll()
     } finally {
       loading.value = false
     }
