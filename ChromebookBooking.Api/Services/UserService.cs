@@ -182,6 +182,18 @@ public sealed class UserService : IUserService
         return sections;
     }
 
+    public async Task DeleteUserAsync(int id)
+    {
+        User? user = await _context.Users.FindAsync(id);
+        if (user is null)
+        {
+            throw new KeyNotFoundException($"Usuário com ID {id} não encontrado.");
+        }
+        
+        _context.Users.Remove(user);
+        await _context.SaveChangesAsync();
+    }
+
     private static UserResponse ToResponse(User user)
     {
         var sections = user.Sections

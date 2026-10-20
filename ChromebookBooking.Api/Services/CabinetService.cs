@@ -74,6 +74,57 @@ public sealed class CabinetService : ICabinetService
         await _context.SaveChangesAsync();
     }
 
+    public async Task<CabinetsOverviewResponse> GetCabinetsOverviewAsync()
+    {
+        var today = DateOnly.FromDateTime(DateTime.Now);
+        var currentTime = TimeOnly.FromDateTime(DateTime.Now);
+
+        var classPeriods = await _context.ClassPeriods
+            .AsNoTracking()
+            .Select(c => new { c.Id, c.Name, c.StartTime, c.EndTime })
+            .OrderBy(c => c.StartTime)
+            .ToListAsync();
+
+        var currentPeriod = classPeriods.FirstOrDefault(c => c.StartTime <= currentTime && c.EndTime >= currentTime);
+
+        var cabinets = await _context.Cabinets
+            .AsNoTracking()
+            .Select(c => new { c.Id, c.Name, c.IsActive })
+            .OrderBy(c => c.Id)
+            .ToListAsync();
+
+        var todayBookings = await _context.Bookings
+            .AsNoTracking()
+            .Where(b => b.Date == today && !b.IsCancelled)
+            .Select(b => new { b.CabinetId, b.ClassPeriodId })
+            .ToListAsync();
+
+        var cabinetStatuses = new List<CabinetStatus>();
+
+        foreach (var cabinet in cabinets)
+        {
+            if (!cabinet.IsActive)
+            {
+                cabinetStatuses.Add(new CabinetStatus(cabinet.Id, cabinet.Name, CabinetStatusType.Inactive));
+                continue;
+            }
+
+            var isBookedNow = currentPeriod != null && todayBookings
+                .Any(b => b.CabinetId == cabinet.Id && b.ClassPeriodId == currentPeriod.Id);
+
+            var status = isBookedNow ? CabinetStatusType.Booked : CabinetStatusType.Available;
+            cabinetStatuses.Add(new CabinetStatus(cabinet.Id, cabinet.Name, status));
+        }
+
+        var currentClassPeriod = new CurrentClassPeriod(
+            currentPeriod?.Id ?? -1,
+            currentPeriod?.Name ?? "Fora do horário de aula",
+            IsClassTime: currentPeriod != null
+        );
+
+        return new CabinetsOverviewResponse(currentClassPeriod, cabinetStatuses);
+    }
+
     private static CabinetResponse ToResponse(Cabinet cabinet)
     {
         return new CabinetResponse(cabinet.Id, cabinet.Name, cabinet.IsActive);

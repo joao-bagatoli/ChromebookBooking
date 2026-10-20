@@ -9,3 +9,9 @@ public sealed record ClassPeriodResponse(
     TimeOnly StartTime,
     TimeOnly EndTime
 );
+
+public sealed record CurrentClassPeriod(
+    int Id,
+    string Name,
+    bool IsClassTime
+);

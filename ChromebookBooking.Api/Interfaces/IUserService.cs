@@ -12,4 +12,5 @@ public interface IUserService
     //Task DeactivateUserAsync(int id);
     Task<LoggedUserResponse> GetLoggedUserAsync(Guid authUserId, string email);
     Task<IReadOnlyList<SectionResponse>> GetUserSectionsAsync(int userId);
+    Task DeleteUserAsync(int id);
 }

@@ -6,12 +6,15 @@
   import Tag from 'primevue/tag'
   import Button from 'primevue/button'
   import { getRoleSeverity, getRoleLabel } from '../../utils/userUtils'
+  import { useToast } from 'primevue/usetoast'
 
   const props = defineProps<{
     search: string
   }>()
 
   const userStore = useUserStore()
+
+  const toast = useToast()
 
   const emit = defineEmits(['edit'])
 
@@ -25,6 +28,25 @@
 
   function onEditUser(data: any) {
     emit('edit', data)
+  }
+
+  async function onDeleteUser(data: any) {
+    try {
+      await userStore.deleteUser(data.id)
+      toast.add({
+        severity: 'success',
+        summary: 'Sucesso',
+        detail: 'Usuário deletado com sucesso!',
+        life: 3000
+      })
+    } catch {
+      toast.add({
+        severity: 'error',
+        summary: 'Erro',
+        detail: 'Não foi possível deletar o usuário.',
+        life: 3000
+      })
+    }
   }
 
   const filteredUsers = computed(() => {
@@ -65,14 +87,24 @@
 
       <Column header="Ações">
         <template #body="{ data }">
-          <Button icon="pi pi-pencil"
-                  text
-                  rounded
-                  severity="secondary"
-                  arial-label="Editar"
-                  title="Editar"
-                  @click="onEditUser(data)">
-          </Button>
+          <div class="table-actions">
+            <Button icon="pi pi-pencil"
+                    text
+                    rounded
+                    severity="secondary"
+                    arial-label="Editar"
+                    title="Editar"
+                    @click="onEditUser(data)">
+            </Button>
+            <Button icon="pi pi-trash"
+                    text
+                    rounded
+                    severity="danger"
+                    arial-label="Excluir"
+                    title="Excluir"
+                    @click="onDeleteUser(data)">
+            </Button>
+          </div>
         </template>
       </Column>
     </DataTable>

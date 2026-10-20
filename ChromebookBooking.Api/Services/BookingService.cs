@@ -120,11 +120,89 @@ public sealed class BookingService : IBookingService
                 b.ClassPeriod!.Name,
                 b.CabinetId,
                 b.Cabinet!.Name,
+                b.Teacher!.Id,
                 b.Teacher!.Email.Value,
+                b.Section!.Id,
                 b.Section!.Name,
                 b.IsPartial,
                 b.ChromebooksQuantity
             ))
             .ToListAsync();
     }
+
+    public async Task<IReadOnlyList<BookingResponse>> GetBookingsAsync()
+    {
+        return await _context.Bookings
+            .AsNoTracking()
+            .Where(b => !b.IsCancelled)
+            .OrderBy(b => b.Date)
+            .ThenBy(b => b.ClassPeriod!.StartTime)
+            .Select(b => new BookingResponse(
+                b.Id,
+                b.Date,
+                b.ClassPeriodId,
+                b.ClassPeriod!.Name,
+                b.CabinetId,
+                b.Cabinet!.Name,
+                b.Teacher!.Id,
+                b.Teacher!.Email.Value,
+                b.Section!.Id,
+                b.Section!.Name,
+                b.IsPartial,
+                b.ChromebooksQuantity
+            ))
+            .ToListAsync();
+    }
+
+    public async Task<IReadOnlyList<DailyBookingPeriod>> GetTodayBookingsAsync()
+    {
+        DateOnly today = DateOnly.FromDateTime(DateTime.Now);
+
+        var totalCabinetsCount = await _context.Cabinets
+            .AsNoTracking()
+            .CountAsync(c => c.IsActive);
+
+        var classPeriods = await _context.ClassPeriods
+            .AsNoTracking()
+            .Select(c => new { c.Id, c.Name, c.StartTime, c.EndTime })
+            .OrderBy(c => c.StartTime)
+            .ToListAsync();
+
+        var todayBookings = await _context.Bookings
+            .AsNoTracking()
+            .Where(b => b.Date == today && !b.IsCancelled)
+            .Select(b => new DailyBooking(
+                b.Id,
+                b.ClassPeriodId,
+                b.ClassPeriod!.Name,
+                b.CabinetId,
+                b.Cabinet!.Name,
+                b.Teacher!.Email.Value,
+                b.Section!.Name
+            ))
+            .ToListAsync();
+
+        var bookingsByPeriod = todayBookings.ToLookup(b => b.ClassPeriodId);
+
+        var schedule = new List<DailyBookingPeriod>(classPeriods.Count);
+
+        foreach (var period in classPeriods)
+        {
+            var occupiedCabinets = bookingsByPeriod[period.Id].Select(b => b.CabinetId).Distinct().Count();
+            var bookinsForPeriod = bookingsByPeriod[period.Id].ToList();
+
+            schedule.Add(new DailyBookingPeriod(
+                period.Id,
+                period.Name,
+                period.StartTime,
+                period.EndTime,
+                occupiedCabinets,
+                totalCabinetsCount,
+                bookinsForPeriod
+            ));
+        }
+
+        return schedule;
+    }   
+
 }

@@ -41,10 +41,21 @@ export const useSectionStore = defineStore('section', () => {
     }
   }
 
+  async function deleteSection(id: number) {
+    try {
+      await sectionService.deleteSection(id)
+      sections.value = sections.value.filter(s => s.id !== id)
+    } catch (error) {
+      console.error('Error deleting section:', error)
+      throw error
+    }
+  }
+
   return {
     sections,
     loadSections,
     addSection,
-    updateSection
+    updateSection,
+    deleteSection
   }
 })
