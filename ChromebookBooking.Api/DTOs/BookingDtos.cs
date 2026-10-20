@@ -14,8 +14,30 @@ public sealed record BookingResponse(
     int ClassPeriodId,
     string ClassPeriodName,
     int CabinetId,
-    string CabinetName, 
+    string CabinetName,
+    int TeacherId,
     string TeacherEmail,
+    int SectionId,
     string SectionName,
     bool IsPartial,
     int? ChromebooksQuantity);
+
+public sealed record DailyBooking(
+    int Id,
+    int ClassPeriodId,
+    string ClassPeriodName,
+    int CabinetId,
+    string CabinetName,
+    string TeacherEmail,
+    string SectionName
+);
+
+public sealed record DailyBookingPeriod(
+    int ClassPeriodId,
+    string ClassPeriodName,
+    TimeOnly StartTime,
+    TimeOnly EndTime,
+    int OccupiedCabinets,
+    int TotalCabinets,
+    IReadOnlyList<DailyBooking> Bookings
+);
