@@ -1,11 +1,19 @@
 import type IHttpClient from '../http/IHttpClient'
-import type { Booking, CreateBookingPayload, } from '../types/booking'
+import type { Booking, CreateBookingPayload } from '../types/booking'
 
 export default class BookingService {
   constructor(
     private readonly httpClient: IHttpClient,
     private readonly baseUrl: string,
   ) { }
+
+  async getBookings(): Promise<Booking[]> {
+    return await this.httpClient.get(`${this.baseUrl}/bookings`)
+  }
+
+  async getTodayBookings(): Promise<Booking[]> {
+    return await this.httpClient.get(`${this.baseUrl}/bookings/today`)
+  }
 
   async getWeeklyBookings(startDate: string, endDate: string): Promise<Booking[]> {
     return await this.httpClient.get(
@@ -15,10 +23,6 @@ export default class BookingService {
 
   async book(payload: CreateBookingPayload): Promise<void> {
     return await this.httpClient.post(`${this.baseUrl}/bookings`, payload)
-  }
-
-  async getBookings(): Promise<Booking[]> {
-    return await this.httpClient.get(`${this.baseUrl}/bookings`)
   }
 
   async cancel(bookingId: number): Promise<void> {

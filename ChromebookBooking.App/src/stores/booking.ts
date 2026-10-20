@@ -2,13 +2,17 @@ import { inject, computed, ref } from 'vue'
 import { defineStore } from 'pinia'
 import { isAxiosError } from 'axios'
 import type { Booking, CreateBookingPayload } from '../types/booking'
-import ServiceFactory from '../services/ServiceFactory'
+import type ServiceFactory from '../services/ServiceFactory'
 
 export const useBookingStore = defineStore('booking', () => {
   const serviceFactory = inject('serviceFactory') as ServiceFactory
   const service = serviceFactory.createBookingService()
 
+  // Reservas da semana exibida no calendário
   const bookings = ref<Booking[]>([])
+  // Todas as reservas (sem filtro de período)
+  const allBookings = ref<Booking[]>([])
+
   const loading = ref(false)
   const saving = ref(false)
   const error = ref<string | null>(null)
@@ -49,6 +53,19 @@ export const useBookingStore = defineStore('booking', () => {
 
   function clearError() {
     error.value = null
+  }
+
+  async function fetchAll() {
+    loading.value = true
+    error.value = null
+    try {
+      const result = await service.getBookings()
+      allBookings.value = Array.isArray(result) ? result : []
+    } catch (e) {
+      error.value = messageOf(e)
+    } finally {
+      loading.value = false
+    }
   }
 
   async function fetchWeek(start: string, end: string) {
@@ -94,66 +111,20 @@ export const useBookingStore = defineStore('booking', () => {
 
   return {
     bookings,
+    allBookings,
     loading,
     saving,
     error,
     getBookings,
     clearError,
+    fetchAll,
     fetchWeek,
     refresh,
     book,
     cancel,
-import { defineStore } from 'pinia'
-import { inject, ref } from 'vue'
-import type ServiceFactory from '../services/ServiceFactory'
-import type { Booking, BookingRequest } from '../types/booking'
-
-export const useBookingStore = defineStore('booking', () => {
-  const serviceFactory = inject('serviceFactory') as ServiceFactory
-  const bookingService = serviceFactory.createBookingService()
-  const allBookings = ref<Booking[]>([])
-  const weeklyBookings = ref<Booking[]>([])
-
-  async function getBookings() {
-    try {
-      allBookings.value = await bookingService.getBookings()
-    } catch (error) {
-      console.error('Error loading bookings:', error)
-    }
-  }
-
-  async function getWeeklyBookings(startDate: string, endDate: string) {
-    try {
-      weeklyBookings.value = await bookingService.getWeeklyBookings(startDate, endDate)
-    } catch (error) {
-      console.error('Error loading weekly bookings:', error)
-    }
-  }
-
-  async function createBooking(payload: BookingRequest) {
-    try {
-      const newBooking = await bookingService.createBooking(payload)
-      allBookings.value.push(newBooking)
-    } catch (error) {
-      console.error('Error creating booking:', error)
-    }
-  }
-
-  async function cancelBooking(bookingId: number) {
-    try {
-      await bookingService.cancelBooking(bookingId)
-      allBookings.value = allBookings.value.filter((b) => b.id !== bookingId)
-    } catch (error) {
-      console.error('Error canceling booking:', error)
-    }
-  }
-
-  return {
-    allBookings,
-    getBookings,
-    weeklyBookings,
-    getWeeklyBookings,
-    createBooking,
-    cancelBooking
+    weeklyBookings: bookings,
+    getWeeklyBookings: fetchWeek,
+    createBooking: book,
+    cancelBooking: cancel,
   }
 })

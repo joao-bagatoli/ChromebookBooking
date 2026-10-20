@@ -1,6 +1,6 @@
 export interface Booking {
   id: number
-  date: string            
+  date: string
   classPeriodId: number
   classPeriodName: string
   cabinetId: number
@@ -16,14 +16,11 @@ export interface Booking {
 export interface CreateBookingPayload {
   date: string
   classPeriodId: number
-  teacherId: number     
-}
-
-export interface BookingRequest {
-  date: string
-  classPeriodId: number
   teacherId: number
   sectionId: number
   isPartial: boolean
   chromebooksQuantity: number | null
 }
+
+// alias para manter compatibilidade com o código antigo
+export type BookingRequest = CreateBookingPayload
