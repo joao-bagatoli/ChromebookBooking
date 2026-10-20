@@ -17,7 +17,7 @@
     <p class="view-subtitle">Consulte as reservas realizadas nos últimos 30 dias</p>
   </div>
   <div>
-    <DataTable :value="bookingStore.bookings">
+    <DataTable :value="bookingStore.allBookings">
       <Column field="date" header="Data"></Column>
       <Column field="classPeriodName" header="Aula"></Column>
       <!--<Column field="cabinetName" header="Gabinete"></Column>-->

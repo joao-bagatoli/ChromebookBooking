@@ -9,7 +9,7 @@ export const useDashboardStore = defineStore('dashboard', () => {
   const cabinetService = serviceFactory.createCabinetService()
   const bookingService = serviceFactory.createBookingService()
 
-  const cabinetsOverview = ref<CabinetsOverview[]>([])
+  const cabinetsOverview = ref<CabinetsOverview>()
   const todayBookings = ref<Booking[]>([])
   const isLoadingOverview = ref(false)
   const isLoadingBookings = ref(false)
