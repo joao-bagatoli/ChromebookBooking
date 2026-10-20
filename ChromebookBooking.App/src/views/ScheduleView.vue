@@ -1,16 +1,11 @@
 <script setup lang="ts">
-import { computed, reactive, ref } from 'vue'
+import { inject, computed, onMounted, ref, watch } from 'vue'
 import { useAuthStore } from '../stores/auth'
+import { useBookingStore } from '../stores/booking'
+import ServiceFactory from '../services/ServiceFactory'
+import type { Section } from '../types/section'
 import ScheduleCalendar from '../components/schedule/ScheduleCalendar.vue'
 import ScheduleCard from '../components/schedule/ScheduleCard.vue'
-
-interface Booking {
-  className: string
-  teacher: string
-  cabinetId: number
-  cabinetName: string
-  discipline?: string
-}
 
 interface Period {
   id: number
@@ -26,186 +21,46 @@ interface Day {
   isToday: boolean
 }
 
-interface Section {
-  id: number
-  name: string
-}
+// Mesma regra do backend (BookingService.MINIMUM_HOURS)
+const MINIMUM_HOURS = 48
+
+// Ideal: vir do backend (ex.: CabinetService)
+const TOTAL_CABINETS = 5
 
 const authStore = useAuthStore()
+const bookingStore = useBookingStore()
+const serviceFactory = inject('serviceFactory') as ServiceFactory
+const sectionService = serviceFactory.createSectionService()
+const classPeriodService = serviceFactory.createClassPeriodService()
 
 const loggedTeacherName = computed(() => {
-  const fullName =
-    authStore.user?.user_metadata?.full_name ??
-    'Usuário Logado'
-
+  const fullName = authStore.user?.user_metadata?.full_name ?? 'Usuário Logado'
   return fullName.split(' ')[0] || 'Usuário'
 })
 
-const TOTAL_CABINETS = 5
+const loggedEmail = computed(
+  () => authStore.user?.email?.toLowerCase() ?? '',
+)
 
-const sections: Section[] = [
-  { id: 1, name: '1ºA' },
-  { id: 2, name: '1ºB' },
-  { id: 3, name: '2ºA' },
-  { id: 4, name: '2ºB' },
-  { id: 5, name: '3ºA' },
-  { id: 6, name: '3ºB' },
-]
+const sections = ref<Section[]>([])
+const periods = ref<Period[]>([])
+const loadError = ref<string | null>(null)
 
 const today = new Date()
+today.setHours(0, 0, 0, 0)
 
-today.setHours(
-  0,
-  0,
-  0,
-  0,
-)
+const selectedDate = ref(new Date(today))
 
-const selectedDate = ref(
-  new Date(today),
-)
+const selectedSlot = ref<{ day: Day; period: Period } | null>(null)
+const reservationDialog = ref<{ day: Day; period: Period } | null>(null)
 
-const selectedSlot = ref<{
-  day: Day
-  period: Period
-} | null>(null)
-
-const reservationDialog = ref<{
-  day: Day
-  period: Period
-} | null>(null)
-
-const reservationForm = ref({
-  sectionId: null as number | null,
-  discipline: '',
-})
-
-const periods: Period[] = [
-  {
-    id: 1,
-    label: '1ª Aula',
-    time: '07:30–08:20',
-  },
-  {
-    id: 2,
-    label: '2ª Aula',
-    time: '08:20–09:10',
-  },
-  {
-    id: 3,
-    label: '3ª Aula',
-    time: '09:10–10:20',
-  },
-  {
-    id: 4,
-    label: '4ª Aula',
-    time: '10:20–11:10',
-  },
-  {
-    id: 5,
-    label: '5ª Aula',
-    time: '13:00–13:50',
-  },
-  {
-    id: 6,
-    label: '6ª Aula',
-    time: '13:50–14:40',
-  },
-]
-
-const bookings = reactive<
-  Record<string, Record<number, Booking[]>>
->({
-  '2026-04-27': {
-    1: [
-      {
-        className: '1ªA',
-        teacher: 'Maria',
-        cabinetId: 1,
-        cabinetName: 'Gabinete 01',
-      },
-    ],
-
-    2: [
-      {
-        className: '2ªB',
-        teacher: 'Maria',
-        cabinetId: 1,
-        cabinetName: 'Gabinete 01',
-      },
-    ],
-  },
-
-  '2026-04-28': {
-    3: [
-      {
-        className: '1ªA',
-        teacher: 'João',
-        cabinetId: 1,
-        cabinetName: 'Gabinete 01',
-      },
-      {
-        className: '3ªA',
-        teacher: 'Carlos',
-        cabinetId: 2,
-        cabinetName: 'Gabinete 02',
-      },
-    ],
-  },
-
-  '2026-04-29': {
-    1: [
-      {
-        className: '1ºB',
-        teacher: 'Maria',
-        cabinetId: 1,
-        cabinetName: 'Gabinete 01',
-      },
-    ],
-
-    5: [
-      {
-        className: '1ºA',
-        teacher: 'Ana',
-        cabinetId: 1,
-        cabinetName: 'Gabinete 01',
-      },
-    ],
-  },
-
-  '2026-04-30': {
-    2: [
-      {
-        className: '2ªA',
-        teacher: 'Maria',
-        cabinetId: 1,
-        cabinetName: 'Gabinete 01',
-      },
-    ],
-  },
-
-  '2026-05-01': {
-    4: [
-      {
-        className: '2ºB',
-        teacher: 'Carlos',
-        cabinetId: 1,
-        cabinetName: 'Gabinete 01',
-      },
-    ],
-  },
-})
+function formatTime(time: string) {
+  return time.slice(0, 5)
+}
 
 function normalizeDate(date: Date) {
   const normalized = new Date(date)
-
-  normalized.setHours(
-    0,
-    0,
-    0,
-    0,
-  )
-
+  normalized.setHours(0, 0, 0, 0)
   return normalized
 }
 
@@ -217,10 +72,7 @@ function getDateKey(date: Date) {
   ].join('-')
 }
 
-function isSameDate(
-  first: Date,
-  second: Date,
-) {
+function isSameDate(first: Date, second: Date) {
   return (
     first.getFullYear() === second.getFullYear() &&
     first.getMonth() === second.getMonth() &&
@@ -228,167 +80,111 @@ function isSameDate(
   )
 }
 
-function isDateBefore(
-  first: Date,
-  second: Date,
-) {
-  return (
-    normalizeDate(first).getTime() <
-    normalizeDate(second).getTime()
-  )
+function isDateBefore(first: Date, second: Date) {
+  return normalizeDate(first).getTime() < normalizeDate(second).getTime()
 }
 
-function addDays(
-  date: Date,
-  amount: number,
-) {
+function addDays(date: Date, amount: number) {
   const result = new Date(date)
-
-  result.setDate(
-    result.getDate() + amount,
-  )
-
+  result.setDate(result.getDate() + amount)
   return result
 }
 
-const weekdayFormatter =
-  new Intl.DateTimeFormat(
-    'pt-BR',
-    {
-      weekday: 'long',
-    },
-  )
+const weekdayFormatter = new Intl.DateTimeFormat('pt-BR', { weekday: 'long' })
 
-const weekDays =
-  computed<Day[]>(() => {
-    const selected =
-      normalizeDate(
-        selectedDate.value,
-      )
+const weekDays = computed<Day[]>(() => {
+  const selected = normalizeDate(selectedDate.value)
+  const dayOfWeek = selected.getDay()
+  const mondayOffset = dayOfWeek === 0 ? -6 : 1 - dayOfWeek
+  const monday = addDays(selected, mondayOffset)
 
-    const dayOfWeek =
-      selected.getDay()
+  const result: Day[] = []
 
-    const mondayOffset =
-      dayOfWeek === 0
-        ? -6
-        : 1 - dayOfWeek
+  for (let index = 0; index < 5; index++) {
+    const currentDate = addDays(monday, index)
 
-    const monday =
-      addDays(
-        selected,
-        mondayOffset,
-      )
+    result.push({
+      key: getDateKey(currentDate),
+      label: weekdayFormatter.format(currentDate),
+      date: currentDate,
+      isPast: isDateBefore(currentDate, today),
+      isToday: isSameDate(currentDate, today),
+    })
+  }
 
-    const result: Day[] = []
+  return result
+})
 
-    for (
-      let index = 0;
-      index < 5;
-      index++
-    ) {
-      const currentDate =
-        addDays(
-          monday,
-          index,
-        )
+// Busca as reservas sempre que a semana exibida mudar
+watch(
+  () => weekDays.value[0]!.key,
+  () => {
+    const days = weekDays.value
+    bookingStore.fetchWeek(days[0]!.key, days[days.length - 1]!.key)
+  },
+  { immediate: true },
+)
 
-      result.push({
-        key:
-          getDateKey(
-            currentDate,
-          ),
+// Carrega turmas e aulas (ClassPeriods) do backend
+onMounted(async () => {
+  try {
+    const [loadedSections, classPeriods] = await Promise.all([
+      sectionService.getAllSections(),
+      classPeriodService.getAllClassPeriods(),
+    ])
 
-        label:
-          weekdayFormatter.format(
-            currentDate,
-          ),
+    sections.value = loadedSections
 
-        date: currentDate,
+    periods.value = classPeriods.map(classPeriod => ({
+      id: classPeriod.id,
+      label: classPeriod.name,
+      time: `${formatTime(classPeriod.startTime)}–${formatTime(classPeriod.endTime)}`,
+    }))
+  } catch (e) {
+    loadError.value =
+      e instanceof Error ? e.message : 'Não foi possível carregar turmas e horários.'
+  }
+})
 
-        isPast:
-          isDateBefore(
-            currentDate,
-            today,
-          ),
-
-        isToday:
-          isSameDate(
-            currentDate,
-            today,
-          ),
-      })
-    }
-
-    return result
-  })
-
-const dateFormatter =
-  new Intl.DateTimeFormat(
-    'pt-BR',
-    {
-      day: 'numeric',
-      month: 'long',
-      year: 'numeric',
-    },
-  )
-
-const headerDate =
-  computed(() => {
-    const formatted =
-      dateFormatter.format(
-        selectedDate.value,
-      )
-
-    return (
-      formatted.charAt(0).toUpperCase() +
-      formatted.slice(1)
-    )
-  })
-
-function getBookings(
-  day: Day,
-  period: Period,
-) {
-  return (
-    bookings[day.key]?.[period.id] ??
-    []
-  )
+// true quando faltam menos de MINIMUM_HOURS para o início da aula
+function isTooSoon(day: Day, period: Period) {
+  const start = period.time.split('–')[0] ?? '00:00'
+  const [hours, minutes] = start.split(':').map(Number)
+  const classStart = new Date(day.date)
+  classStart.setHours(hours ?? 0, minutes ?? 0, 0, 0)
+  const hoursUntilClass = (classStart.getTime() - Date.now()) / 36e5
+  return hoursUntilClass < MINIMUM_HOURS
 }
 
-function getAvailableCabinets(
-  day: Day,
-  period: Period,
-) {
-  const reservedCabinetIds =
-    new Set(
-      getBookings(
-        day,
-        period,
-      ).map(
-        booking =>
-          booking.cabinetId,
-      ),
-    )
+// Slot indisponível para novas reservas (dia passado ou fora da antecedência)
+function isLocked(day: Day, period: Period) {
+  return day.isPast || isTooSoon(day, period)
+}
+
+function getBookings(day: Day, period: Period) {
+  return bookingStore.getBookings(day.key, period.id).map(booking => ({
+    id: booking.id,
+    className: booking.sectionName,
+    // Ideal: o backend devolver o nome do professor
+    teacher: booking.teacherEmail.split('@')[0] ?? booking.teacherEmail,
+    cabinetId: booking.cabinetId,
+    cabinetName: booking.cabinetName,
+    isMine: booking.teacherEmail.toLowerCase() === loggedEmail.value,
+  }))
+}
+
+function getAvailableCabinets(day: Day, period: Period) {
+  const reservedCabinetIds = new Set(
+    getBookings(day, period).map(booking => booking.cabinetId),
+  )
 
   const available = []
 
-  for (
-    let cabinetId = 1;
-    cabinetId <= TOTAL_CABINETS;
-    cabinetId++
-  ) {
-    if (
-      !reservedCabinetIds.has(
-        cabinetId,
-      )
-    ) {
+  for (let cabinetId = 1; cabinetId <= TOTAL_CABINETS; cabinetId++) {
+    if (!reservedCabinetIds.has(cabinetId)) {
       available.push({
         id: cabinetId,
-        name:
-          `Gabinete ${String(
-            cabinetId,
-          ).padStart(2, '0')}`,
+        name: `Gabinete ${String(cabinetId).padStart(2, '0')}`,
       })
     }
   }
@@ -396,141 +192,71 @@ function getAvailableCabinets(
   return available
 }
 
-function moveWeek(
-  amount: number,
-) {
-  selectedDate.value =
-    addDays(
-      selectedDate.value,
-      amount * 7,
-    )
-
+function moveWeek(amount: number) {
+  selectedDate.value = addDays(selectedDate.value, amount * 7)
   selectedSlot.value = null
 }
 
 function goToToday() {
-  selectedDate.value =
-    new Date(today)
-
+  selectedDate.value = new Date(today)
   selectedSlot.value = null
 }
 
-function selectSlot(
-  day: Day,
-  period: Period,
-) {
-  if (day.isPast) {
-    return
-  }
-
-  selectedSlot.value = {
-    day,
-    period,
-  }
+function selectSlot(day: Day, period: Period) {
+  if (day.isPast) return
+  selectedSlot.value = { day, period }
 }
 
-function openReservation(
-  day: Day,
-  period: Period,
-) {
-  if (day.isPast) {
-    return
-  }
+function openReservation(day: Day, period: Period) {
+  if (isLocked(day, period)) return
+  if (getAvailableCabinets(day, period).length === 0) return
 
-  if (
-    getAvailableCabinets(
-      day,
-      period,
-    ).length === 0
-  ) {
-    return
-  }
-
-  selectedSlot.value = {
-    day,
-    period,
-  }
-
-  reservationForm.value = {
-    sectionId: null,
-    discipline: '',
-  }
-
-  reservationDialog.value = {
-    day,
-    period,
-  }
+  selectedSlot.value = { day, period }
+  bookingStore.clearError()
+  reservationDialog.value = { day, period }
 }
 
 function closeReservation() {
   reservationDialog.value = null
+  bookingStore.clearError()
 }
 
-function confirmReservation() {
-  if (!reservationDialog.value) {
+async function confirmReservation(form: { sectionId: number; discipline: string }) {
+  if (!reservationDialog.value) return
+
+  // id do usuário na API (LoggedUserResponse.Id), carregado em authStore.profile
+  const teacherId = authStore.profile?.id
+  if (!teacherId) {
+    bookingStore.error = 'Usuário não identificado. Faça login novamente.'
     return
   }
 
-  if (
-    !reservationForm.value.sectionId
-  ) {
-    return
+  const { day, period } = reservationDialog.value
+
+  try {
+    await bookingStore.book({
+      date: day.key,
+      classPeriodId: period.id,
+      teacherId,
+      sectionId: form.sectionId,
+      isPartial: false,
+      chromebooksQuantity: null,
+    })
+
+    reservationDialog.value = null
+  } catch {
+    // A mensagem fica em bookingStore.error e aparece no modal
   }
+}
 
-  const {
-    day,
-    period,
-  } = reservationDialog.value
+async function cancelBooking(bookingId: number) {
+  if (!window.confirm('Cancelar esta reserva?')) return
 
-  const availableCabinets =
-    getAvailableCabinets(
-      day,
-      period,
-    )
-
-  const cabinet =
-    availableCabinets[0]
-
-  const section =
-    sections.find(
-      item =>
-        item.id ===
-        reservationForm.value.sectionId,
-    )
-
-  if (!cabinet || !section) {
-    return
+  try {
+    await bookingStore.cancel(bookingId)
+  } catch {
+    // A mensagem fica em bookingStore.error e aparece na página
   }
-
-  const dayBookings =
-    bookings[day.key] ??
-    (bookings[day.key] = {})
-
-  const periodBookings =
-    dayBookings[period.id] ??
-    (dayBookings[period.id] = [])
-
-  periodBookings.push({
-    className:
-      section.name,
-
-    teacher:
-      loggedTeacherName.value,
-
-    cabinetId:
-      cabinet.id,
-
-    cabinetName:
-      cabinet.name,
-
-    discipline:
-      reservationForm.value
-        .discipline
-        .trim() ||
-      undefined,
-  })
-
-  closeReservation()
 }
 </script>
 
@@ -538,7 +264,6 @@ function confirmReservation() {
   <section class="schedule-page">
 
     <header class="schedule-header">
-
       <div>
         <h1 class="view-title">
           Agenda
@@ -548,7 +273,6 @@ function confirmReservation() {
           Gerencie todas as reservas
         </p>
       </div>
-
     </header>
 
     <ScheduleCalendar :week-days="weekDays"
@@ -557,22 +281,33 @@ function confirmReservation() {
                       :total-cabinets="TOTAL_CABINETS"
                       :get-bookings="getBookings"
                       :get-available-cabinets="getAvailableCabinets"
+                      :is-locked="isLocked"
                       @move-week="moveWeek"
                       @go-to-today="goToToday"
                       @select-slot="selectSlot"
-                      @open-reservation="openReservation" />
+                      @open-reservation="openReservation"
+                      @cancel-booking="cancelBooking" />
+
+    <p v-if="loadError"
+       class="page-error">
+      {{ loadError }}
+    </p>
+
+    <p v-if="bookingStore.error && !reservationDialog"
+       class="page-error">
+      {{ bookingStore.error }}
+    </p>
 
     <ScheduleCard v-if="reservationDialog"
                   :reservation-dialog="reservationDialog"
-                  :reservation-form="reservationForm"
                   :sections="sections"
                   :logged-teacher-name="loggedTeacherName"
-                  :available-cabinets="
-        getAvailableCabinets(
-          reservationDialog.day,
-          reservationDialog.period,
-        )
-      "
+                  :available-cabinets="getAvailableCabinets(
+                    reservationDialog.day,
+                    reservationDialog.period,
+                  )"
+                  :saving="bookingStore.saving"
+                  :error="bookingStore.error"
                   @close="closeReservation"
                   @confirm="confirmReservation" />
 
@@ -605,5 +340,11 @@ function confirmReservation() {
     margin: 0.3rem 0 0;
     color: var(--p-surface-500);
     font-size: 0.9rem;
+  }
+
+  .page-error {
+    margin: 0.75rem 0 0;
+    color: #c0392b;
+    font-size: 0.8rem;
   }
 </style>

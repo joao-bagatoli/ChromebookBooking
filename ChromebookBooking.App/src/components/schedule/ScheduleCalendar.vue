@@ -1,10 +1,12 @@
 <script setup lang="ts">
 interface Booking {
+  id: number
   className: string
   teacher: string
   cabinetId: number
   cabinetName: string
   discipline?: string
+  isMine: boolean
 }
 
 interface Period {
@@ -31,55 +33,38 @@ const props = defineProps<{
   periods: Period[]
   selectedSlot: SelectedSlot | null
   totalCabinets: number
-  getBookings: (
-    day: Day,
-    period: Period,
-  ) => Booking[]
-  getAvailableCabinets: (
-    day: Day,
-    period: Period,
-  ) => {
-    id: number
-    name: string
-  }[]
+  getBookings: (day: Day, period: Period) => Booking[]
+  getAvailableCabinets: (day: Day, period: Period) => { id: number; name: string }[]
+  isLocked: (day: Day, period: Period) => boolean
 }>()
 
 const emit = defineEmits<{
   moveWeek: [amount: number]
   goToToday: []
-  selectSlot: [
-    day: Day,
-    period: Period,
-  ]
-  openReservation: [
-    day: Day,
-    period: Period,
-  ]
+  selectSlot: [day: Day, period: Period]
+  openReservation: [day: Day, period: Period]
+  cancelBooking: [bookingId: number]
 }>()
 
-const dayNumberFormatter =
-  new Intl.DateTimeFormat(
-    'pt-BR',
-    {
-      day: '2-digit',
-    },
-  )
+const dayNumberFormatter = new Intl.DateTimeFormat('pt-BR', {
+  day: '2-digit',
+})
 
-function formatDayNumber(
-  date: Date,
-) {
-  return dayNumberFormatter.format(
-    date,
-  )
+function formatDayNumber(date: Date) {
+  return dayNumberFormatter.format(date)
 }
 
-function capitalize(
-  value: string,
-) {
-  return (
-    value.charAt(0).toUpperCase() +
-    value.slice(1)
-  )
+function capitalize(value: string) {
+  return value.charAt(0).toUpperCase() + value.slice(1)
+}
+
+function canReserve(day: Day, period: Period) {
+  return !props.isLocked(day, period) && props.getAvailableCabinets(day, period).length > 0
+}
+
+function reserveLabel(day: Day, period: Period) {
+  if (props.isLocked(day, period)) return 'Indisponível'
+  return props.getAvailableCabinets(day, period).length ? 'Reservar gabinete' : 'Sem gabinetes'
 }
 </script>
 
@@ -121,12 +106,9 @@ function capitalize(
              :key="day.key"
              class="day-heading"
              :class="{
-            'is-selected-day':
-              day.isToday,
-
-            'is-past-day':
-              day.isPast,
-          }">
+               'is-selected-day': day.isToday,
+               'is-past-day': day.isPast,
+             }">
 
           <span>
             {{ capitalize(day.label) }}
@@ -170,65 +152,26 @@ function capitalize(
              :key="`${day.key}-${period.id}`"
              class="calendar-cell"
              :class="{
-            'has-selection':
-              props.selectedSlot?.day.key ===
-                day.key &&
-              props.selectedSlot?.period.id ===
-                period.id,
-
-            'is-past':
-              day.isPast,
-          }"
+               'has-selection':
+                 props.selectedSlot?.day.key === day.key &&
+                 props.selectedSlot?.period.id === period.id,
+               'is-past': day.isPast,
+             }"
              role="button"
              tabindex="0"
-             @click="
-            emit(
-              'selectSlot',
-              day,
-              period,
-            )
-          "
-             @keydown.enter="
-            emit(
-              'selectSlot',
-              day,
-              period,
-            )
-          ">
+             @click="emit('selectSlot', day, period)"
+             @keydown.enter="emit('selectSlot', day, period)">
 
           <span class="availability"
-                :class="{
-                occupied:
-                props.getBookings(
-                day,
-                period,
-                ).length>
-            0,
-            }"
-            >
-            {{
-              props.getBookings(
-                day,
-                period,
-              ).length
-            }}/{{ props.totalCabinets }}
+                :class="{ occupied: props.getBookings(day, period).length > 0 }">
+            {{ props.getBookings(day, period).length }}/{{ props.totalCabinets }}
           </span>
 
-          <div v-if="
-              props.getBookings(
-                day,
-                period,
-              ).length
-            "
+          <div v-if="props.getBookings(day, period).length"
                class="booking-list">
 
-            <span v-for="booking in props.getBookings(
-                day,
-                period,
-              )"
-                  :key="
-                `${booking.className}-${booking.teacher}-${booking.cabinetId}`
-              "
+            <span v-for="booking in props.getBookings(day, period)"
+                  :key="booking.id"
                   class="booking-chip">
 
               <span>
@@ -245,15 +188,17 @@ function capitalize(
                 {{ booking.discipline }}
               </small>
 
+              <button v-if="booking.isMine && !day.isPast"
+                      class="cancel-button"
+                      type="button"
+                      @click.stop="emit('cancelBooking', booking.id)">
+                Cancelar
+              </button>
+
             </span>
 
             <small>
-              {{
-                props.getAvailableCabinets(
-                  day,
-                  period,
-                ).length
-              }}
+              {{ props.getAvailableCabinets(day, period).length }}
               vagas
             </small>
 
@@ -261,31 +206,12 @@ function capitalize(
 
           <button class="reserve-button"
                   type="button"
-                  :disabled="
-              day.isPast ||
-              props.getAvailableCabinets(
-                day,
-                period,
-              ).length === 0
-            "
-                  @click.stop="
-              emit(
-                'openReservation',
-                day,
-                period,
-              )
-            ">
+                  :disabled="!canReserve(day, period)"
+                  @click.stop="emit('openReservation', day, period)">
 
             <i class="pi pi-plus"></i>
 
-            {{
-              props.getAvailableCabinets(
-                day,
-                period,
-              ).length
-                ? 'Reservar gabinete'
-                : 'Sem gabinetes'
-            }}
+            {{ reserveLabel(day, period) }}
 
           </button>
 
@@ -295,6 +221,15 @@ function capitalize(
             <i class="pi pi-lock"></i>
 
             Indisponível
+
+          </span>
+
+          <span v-else-if="props.isLocked(day, period)"
+                class="past-label">
+
+            <i class="pi pi-clock"></i>
+
+            Mínimo de 48h de antecedência
 
           </span>
 
@@ -317,17 +252,9 @@ function capitalize(
 
         em
 
-        {{
-          capitalize(
-            props.selectedSlot.day.label,
-          )
-        }},
+        {{ capitalize(props.selectedSlot.day.label) }},
 
-        {{
-          formatDayNumber(
-            props.selectedSlot.day.date,
-          )
-        }}
+        {{ formatDayNumber(props.selectedSlot.day.date) }}
 
         ·
 
@@ -599,6 +526,23 @@ function capitalize(
     font-size: 0.64rem;
     font-weight: 500;
   }
+
+  .cancel-button {
+    align-self: flex-start;
+    margin-top: 0.2rem;
+    padding: 0;
+    border: 0;
+    color: #c0392b;
+    background: transparent;
+    font: inherit;
+    font-size: 0.58rem;
+    font-weight: 600;
+    cursor: pointer;
+  }
+
+    .cancel-button:hover {
+      text-decoration: underline;
+    }
 
   .reserve-button {
     display: inline-flex;

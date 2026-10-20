@@ -21,7 +21,7 @@ public sealed class BookingsController : ControllerBase
     [Authorize]
     public async Task<IActionResult> GetWeeklyBookings(DateOnly startDate, DateOnly endDate)
     {
-        var bookings = _service.GetWeeklyBookingsAsync(startDate, endDate);
+        var bookings = await _service.GetWeeklyBookingsAsync(startDate, endDate);
         return Ok(bookings);
     }
 
