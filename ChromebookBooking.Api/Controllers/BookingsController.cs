@@ -26,6 +26,14 @@ public sealed class BookingsController : ControllerBase
         return Ok(bookings);
     }
 
+    [HttpGet("today")]
+    [Authorize(Roles = nameof(UserRole.Admin))]
+    public async Task<IActionResult> GetTodayBookings()
+    {
+        var bookings = await _service.GetTodayBookingsAsync();
+        return Ok(bookings);
+    }
+
     [HttpGet("weekly")]
     [Authorize]
     public async Task<IActionResult> GetWeeklyBookings(DateOnly startDate, DateOnly endDate)

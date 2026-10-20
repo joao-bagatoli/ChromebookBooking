@@ -3,8 +3,10 @@ export interface Booking {
   date: string
   classPeriodId: number
   classPeriodName: string
+  cabinetId: number
+  cabinetName: string
   teacherId: number
-  teacherName: string
+  teacherEmail: string
   sectionId: number
   sectionName: string
   isPartial: boolean

@@ -8,4 +8,5 @@ public interface IBookingService
     Task CancelBookingAsync(int bookingId, Guid authUserId);
     Task<IReadOnlyList<BookingResponse>> GetWeeklyBookingsAsync(DateOnly startDate, DateOnly endDate);
     Task<IReadOnlyList<BookingResponse>> GetBookingsAsync();
+    Task<IReadOnlyList<DailyBookingPeriod>> GetTodayBookingsAsync();
 }
