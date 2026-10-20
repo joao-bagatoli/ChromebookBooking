@@ -15,4 +15,8 @@ export default class SectionService {
   async updateSection(id: number, payload: { name: string, isActive: boolean }): Promise<void> {
     return await this.httpClient.put(`${this.baseUrl}/sections/${id}`, payload)
   }
+
+  async deleteSection(id: number): Promise<void> {
+    return await this.httpClient.delete(`${this.baseUrl}/sections/${id}`)
+  }
 }

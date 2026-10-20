@@ -8,6 +8,7 @@ import Button from 'primevue/button'
 import Tag from 'primevue/tag'
 import Toast from 'primevue/toast'
 import CabinetDialog from '@/components/settings/dialogs/CabinetDialog.vue'
+import { useToast } from 'primevue/usetoast'
 
 const props = defineProps<{
   search: string
@@ -17,11 +18,21 @@ const cabinetStore = useCabinetStore()
 const dialogVisible = ref(false)
 const selectedCabinet = ref<Cabinet | null>(null)
 
+const toast = useToast()
+
 const columns = [
   { field: 'name', header: 'Nome' },
   { field: 'isActive', header: 'Status' },
   { field: 'action', header: 'Ações' }
 ]
+
+function getCabinetStatus(isActive: boolean) {
+  return isActive ? 'Ativo' : 'Inativo'
+}
+
+function getCabinetStatusSeverity(isActive: boolean) {
+  return isActive ? 'success' : 'danger'
+}
 
 const filteredCabinets = computed(() => {
   const query = props.search.toLowerCase()
@@ -38,6 +49,25 @@ onMounted(async () => {
 const editCabinet = (cabinet: Cabinet) => {
   selectedCabinet.value = { ...cabinet }
   dialogVisible.value = true
+}
+
+const deleteCabinet = async (cabinet: Cabinet) => {
+  try {
+    await cabinetStore.deleteCabinet(cabinet.id)
+    toast.add({
+      severity: 'success',
+      summary: 'Sucesso',
+      detail: 'Gabinete deletado com sucesso!',
+      life: 3000
+    })
+  } catch {
+    toast.add({
+      severity: 'error',
+      summary: 'Erro',
+      detail: 'Não foi possível deletar o gabinete.',
+      life: 3000
+    })
+  }
 }
 
 const handleDialogClose = () => {
@@ -61,18 +91,25 @@ const handleDialogClose = () => {
               :header="col.header">
         <template #body="slotProps">
           <template v-if="col.field === 'action'">
-            <Button icon="pi pi-pencil"
-                    severity="secondary"
-                    text
-                    rounded
-                    @click="editCabinet(slotProps.data)" />
+            <div class="table-actions">
+              <Button icon="pi pi-pencil"
+                      severity="secondary"
+                      text
+                      rounded
+                      @click="editCabinet(slotProps.data)" />
+              <Button icon="pi pi-trash"
+                      severity="danger"
+                      text
+                      rounded
+                      @click="deleteCabinet(slotProps.data)" />
+            </div>
           </template>
 
           <template v-else-if="col.field === 'isActive'">
-            <span class="status-badge"
-                  :class="slotProps.data.isActive ? 'active' : 'inactive'">
-              {{ slotProps.data.isActive ? 'Ativo' : 'Inativo' }}
-            </span>
+            <Tag :value="getCabinetStatus(slotProps.data.isActive)"
+                 :severity="getCabinetStatusSeverity(slotProps.data.isActive)"
+                 rounded>
+            </Tag>
           </template>
 
           <template v-else>
@@ -92,37 +129,5 @@ const handleDialogClose = () => {
   .table-container {
     width: 100%;
     overflow-x: auto;
-  }
-
-  .status-badge {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    padding: 4px 12px;
-    border-radius: 20px;
-    font-size: 0.85rem;
-    font-weight: 600;
-    line-height: 1;
-  }
-
-    .status-badge.active {
-      background-color: #e8f8f0;
-      color: #22c55e;
-    }
-
-    .status-badge.inactive {
-      background-color: #fde8e8;
-      color: #ef4444;
-    }
-
-  :deep(.p-datatable-tbody > tr > td) {
-    padding: 1rem 0.75rem;
-  }
-
-  @media (max-width: 640px) {
-    :deep(.p-datatable-tbody > tr > td) {
-      padding: 0.75rem 0.5rem;
-      font-size: 0.9rem;
-    }
   }
 </style>

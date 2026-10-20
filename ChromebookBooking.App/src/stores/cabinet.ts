@@ -31,10 +31,16 @@ export const useCabinetStore = defineStore('cabinet', () => {
     }
   }
 
+  async function deleteCabinet(id: number) {
+    await cabinetService.deleteCabinet(id)
+    cabinets.value = cabinets.value.filter((c) => c.id !== id)
+  }
+
   return {
     cabinets,
     getAllCabinets,
     createCabinet,
-    updateCabinet
+    updateCabinet,
+    deleteCabinet
   }
 })

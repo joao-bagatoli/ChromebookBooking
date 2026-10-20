@@ -1,5 +1,5 @@
 import type IHttpClient from '../http/IHttpClient'
-import type { Booking, CreateBookingPayload } from '../types/booking'
+import type { Booking, CreateBookingPayload, } from '../types/booking'
 
 export default class BookingService {
   constructor(

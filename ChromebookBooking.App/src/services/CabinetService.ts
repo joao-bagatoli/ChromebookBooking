@@ -1,5 +1,5 @@
 import type IHttpClient from "../http/IHttpClient"
-import type { Cabinet } from "../types/cabinet"
+import type { Cabinet, CabinetsOverview } from "../types/cabinet"
 
 export default class CabinetService {
   constructor(
@@ -42,23 +42,29 @@ export default class CabinetService {
     )
   }
 
-  async activateCabinet(id: number): Promise<void> {
-    return await this.httpClient.patch(
-      `${this.baseUrl}/cabinets/${id}/activate`,
-      {}
-    )
-  }
+  // async activateCabinet(id: number): Promise<void> {
+  //   return await this.httpClient.patch(
+  //     `${this.baseUrl}/cabinets/${id}/activate`,
+  //     {}
+  //   )
+  // }
 
-  async deactivateCabinet(id: number): Promise<void> {
-    return await this.httpClient.patch(
-      `${this.baseUrl}/cabinets/${id}/deactivate`,
-      {}
-    )
-  }
+  // async deactivateCabinet(id: number): Promise<void> {
+  //   return await this.httpClient.patch(
+  //     `${this.baseUrl}/cabinets/${id}/deactivate`,
+  //     {}
+  //   )
+  // }
 
   async deleteCabinet(id: number): Promise<void> {
     return await this.httpClient.delete(
       `${this.baseUrl}/cabinets/${id}`
+    )
+  }
+
+  async getCabinetsOverview(): Promise<CabinetsOverview> {
+    return await this.httpClient.get(
+      `${this.baseUrl}/cabinets/overview`
     )
   }
 }

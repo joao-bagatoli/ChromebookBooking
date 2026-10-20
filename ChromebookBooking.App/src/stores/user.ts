@@ -41,10 +41,21 @@ export const useUserStore = defineStore('user', () => {
     }
   }
 
+  async function deleteUser(id: number) {
+    try {
+      await userService.deleteUser(id)
+      users.value = users.value.filter(u => u.id !== id)
+    } catch (error) {
+      console.error('Error deleting user:', error)
+      throw error
+    }
+  }
+
   return {
     users,
     loadUsers,
     addUser,
-    updateUser
+    updateUser,
+    deleteUser
   }
 })

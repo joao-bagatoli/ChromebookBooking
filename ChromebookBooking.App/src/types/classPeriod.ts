@@ -5,3 +5,9 @@ export interface ClassPeriod {
   startTime: string 
   endTime: string
 }
+
+export interface CurrentClassPeriod {
+  id: number
+  name: string
+  isClassTime: boolean
+}

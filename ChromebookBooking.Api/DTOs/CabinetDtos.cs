@@ -12,3 +12,21 @@ public sealed record CabinetResponse(
     string Name,
     bool IsActive
 );
+
+public sealed record CabinetStatus(
+    int Id,
+    string Name,
+    CabinetStatusType Status
+);
+
+public enum CabinetStatusType
+{
+    Available,
+    Booked,
+    Inactive
+}
+
+public sealed record CabinetsOverviewResponse(
+    CurrentClassPeriod CurrentClassPeriod,
+    IReadOnlyList<CabinetStatus> CabinetStatuses
+);

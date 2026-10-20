@@ -1,4 +1,5 @@
-﻿using ChromebookBooking.Api.DTOs;
+﻿using ChromebookBooking.Api.Domain.Common.Enums;
+using ChromebookBooking.Api.DTOs;
 using ChromebookBooking.Api.Extensions;
 using ChromebookBooking.Api.Interfaces;
 using Microsoft.AspNetCore.Authorization;
@@ -18,6 +19,22 @@ public sealed class BookingsController : ControllerBase
     }
 
     [HttpGet]
+    [Authorize(Roles = nameof(UserRole.Admin))]
+    public async Task<IActionResult> GetBookings()
+    {
+        var bookings = await _service.GetBookingsAsync();
+        return Ok(bookings);
+    }
+
+    [HttpGet("today")]
+    [Authorize(Roles = nameof(UserRole.Admin))]
+    public async Task<IActionResult> GetTodayBookings()
+    {
+        var bookings = await _service.GetTodayBookingsAsync();
+        return Ok(bookings);
+    }
+
+    [HttpGet("weekly")]
     [Authorize]
     public async Task<IActionResult> GetWeeklyBookings(DateOnly startDate, DateOnly endDate)
     {
@@ -48,5 +65,4 @@ public sealed class BookingsController : ControllerBase
         return NoContent();
     }
 
-    // teste
 }
