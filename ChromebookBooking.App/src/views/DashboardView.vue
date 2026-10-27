@@ -1,21 +1,13 @@
 <script setup lang="ts">
   import { onMounted, computed } from 'vue'
   import { useDashboardStore } from '../stores/dashboard'
-  import { useAuthStore } from '../stores/auth'
   import Badge from 'primevue/badge'
 
   const dashboardStore = useDashboardStore()
-  const authStore = useAuthStore()
 
   onMounted(() => {
     dashboardStore.getCabinetsOverview()
     dashboardStore.getTodayBookings()
-  })
-
-  // Pega o primeiro nome do usuário ou a primeira parte do email para a saudação
-  const userName = computed(() => {
-    const nameOrEmail = authStore.profile?.email || 'Usuário'
-    return nameOrEmail
   })
 
   const currentClassText = computed(() => {
@@ -34,12 +26,38 @@
         return { label: 'Desconhecido', severity: 'info', class: '' }
     }
   }
+
+  // Calcula o total de gabinetes
+  const totalCabinets = computed(() => {
+    return dashboardStore.cabinetsOverview?.cabinets?.length || 5
+  })
+
+  // Agrupa as reservas pelo período da aula
+  const groupedBookings = computed(() => {
+    if (!dashboardStore.todayBookings) return []
+
+    const groups = new Map<string, any>()
+
+    dashboardStore.todayBookings.forEach((booking) => {
+      const periodKey = booking.classPeriodName
+      if (!groups.has(periodKey)) {
+        groups.set(periodKey, {
+          periodName: periodKey,
+          periodId: booking.classPeriodId,
+          bookings: []
+        })
+      }
+      groups.get(periodKey).bookings.push(booking)
+    })
+
+    // Retorna ordenado pelo ID do período para aparecer na ordem certa (1ª, 2ª, 3ª aula)
+    return Array.from(groups.values()).sort((a, b) => a.periodId - b.periodId)
+  })
 </script>
 
 <template>
   <div class="dashboard-wrapper">
     <header class="page-header">
-      <h2 class="greeting">Olá, {{ userName }}</h2>
       <h1 class="view-title">Dashboard</h1>
       <p class="view-subtitle">Visão geral do uso atual dos Chromebooks</p>
     </header>
@@ -102,8 +120,42 @@
           </div>
 
           <div v-else class="schedule-list">
+
+            <!-- Estado Vazio -->
+            <div v-if="groupedBookings.length === 0" class="schedule-row empty-row">
+              <div class="bookings-tags">
+                <span class="empty-text">Nenhuma reserva agendada para hoje.</span>
+              </div>
+            </div>
+
+            <!-- Iteração das reservas agrupadas -->
+            <div v-for="group in groupedBookings"
+                 :key="group.periodName"
+                 class="schedule-row">
+
+              <div class="period-info">
+                <strong>{{ group.periodName }}</strong>
+              </div>
+
+              <div class="bookings-tags">
+                <span v-for="booking in group.bookings"
+                      :key="booking.id"
+                      class="booking-tag">
+                  <strong>{{ booking.cabinetName }}</strong> &mdash; {{ booking.teacherEmail.split('@')[0] }} &bull; {{ booking.sectionName }}
+                </span>
+              </div>
+
+              <div class="capacity-info">
+                <span class="fraction">{{ group.bookings.length }}/{{ totalCabinets }}</span>
+              </div>
+
+            </div>
+
+          </div>
+
+          <!--<div v-else class="schedule-list">-->
             <!-- Estrutura baseada no layout para iteração futura com os dados do back-end -->
-            <div class="schedule-row">
+            <!--<div class="schedule-row">
               <div class="period-info">
                 <strong>1ª Aula</strong>
                 <span>07:30 - 08:20</span>
@@ -164,7 +216,9 @@
                 <span class="fraction">0/5</span>
               </div>
             </div>
-          </div>
+          </div>-->
+
+
         </div>
       </section>
     </template>
@@ -180,13 +234,6 @@
 
   .page-header {
     margin-bottom: 0.5rem;
-  }
-
-  .greeting {
-    font-size: 1.1rem;
-    color: var(--surface-600, #475569);
-    margin: 0 0 0.5rem 0;
-    font-weight: 500;
   }
 
   .view-title {
