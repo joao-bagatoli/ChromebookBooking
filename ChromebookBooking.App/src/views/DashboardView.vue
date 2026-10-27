@@ -141,7 +141,7 @@
                 <span v-for="booking in group.bookings"
                       :key="booking.id"
                       class="booking-tag">
-                  <strong>{{ booking.cabinetName }}</strong> &mdash; {{ booking.teacherEmail.split('@')[0] || '' }} &bull; {{ booking.sectionName }}
+                  <strong>{{ booking.cabinetName }}</strong> &mdash; {{ booking.teacherEmail?.split('@')[0] || '' }} &bull; {{ booking.sectionName }}
                 </span>
               </div>
 
