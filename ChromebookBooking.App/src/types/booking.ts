@@ -13,7 +13,7 @@ export interface Booking {
   chromebooksQuantity: number | null
 }
 
-export interface BookingRequest {
+export interface CreateBookingPayload {
   date: string
   classPeriodId: number
   teacherId: number
@@ -21,3 +21,6 @@ export interface BookingRequest {
   isPartial: boolean
   chromebooksQuantity: number | null
 }
+
+// alias para manter compatibilidade com o código antigo
+export type BookingRequest = CreateBookingPayload
