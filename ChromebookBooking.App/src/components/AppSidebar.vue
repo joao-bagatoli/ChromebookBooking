@@ -13,7 +13,7 @@
   }
 
   const moduleConfig: Record<string, { label: string, icon: string }> = {
-    Dashboard: { label: 'Dashboard', icon: 'pi pi-home' },
+    Dashboard: { label: 'Início', icon: 'pi pi-home' },
     Schedule: { label: 'Agenda', icon: 'pi pi-calendar' },
     History: { label: 'Histórico', icon: 'pi pi-history' },
     Settings: { label: 'Configurações', icon: 'pi pi-cog' }

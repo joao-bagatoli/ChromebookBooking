@@ -27,7 +27,6 @@
     }
   }
 
-  // Calcula o total de gabinetes
   const totalCabinets = computed(() => {
     return dashboardStore.cabinetsOverview?.cabinets?.length || 5
   })
@@ -44,10 +43,14 @@
         groups.set(periodKey, {
           periodName: periodKey,
           periodId: booking.classPeriodId,
+          // timeText: booking.startTime && booking.endTime ? `${booking.startTime} - ${booking.endTime}` : '8:30 - 9:15',
           bookings: []
         })
       }
-      groups.get(periodKey).bookings.push(booking)
+      
+      if (booking.cabinetName) {
+        groups.get(periodKey).bookings.push(booking)
+      }
     })
 
     // Retorna ordenado pelo ID do período para aparecer na ordem certa (1ª, 2ª, 3ª aula)
@@ -58,7 +61,7 @@
 <template>
   <div class="dashboard-wrapper">
     <header class="page-header">
-      <h1 class="view-title">Dashboard</h1>
+      <h1 class="view-title">Início</h1>
       <p class="view-subtitle">Visão geral do uso atual dos Chromebooks</p>
     </header>
 
@@ -128,17 +131,19 @@
               </div>
             </div>
 
-            <!-- Iteração das reservas agrupadas -->
             <div v-for="group in groupedBookings"
                  :key="group.periodName"
                  class="schedule-row">
 
               <div class="period-info">
-                <strong>{{ group.periodName }}</strong>
+                <span class="period-name">{{ group.periodName }}</span>
+                <!--<span class="period-time">{{ group.timeText }}</span>-->
               </div>
 
               <div class="bookings-tags">
-                <span v-for="booking in group.bookings"
+                <span v-if="group.bookings.length === 0" class="empty-text">Nenhuma Reserva</span>
+                <span v-else
+                      v-for="booking in group.bookings"
                       :key="booking.id"
                       class="booking-tag">
                   <strong>{{ booking.cabinetName }}</strong> &mdash; {{ booking.teacherEmail?.split('@')[0] || '' }} &bull; {{ booking.sectionName }}
@@ -152,72 +157,6 @@
             </div>
 
           </div>
-
-          <!--<div v-else class="schedule-list">-->
-            <!-- Estrutura baseada no layout para iteração futura com os dados do back-end -->
-            <!--<div class="schedule-row">
-              <div class="period-info">
-                <strong>1ª Aula</strong>
-                <span>07:30 - 08:20</span>
-              </div>
-              <div class="bookings-tags">
-                <span class="booking-tag">
-                  <strong>Gabinete 1</strong> &mdash; Maria Silva &bull; 1ºA
-                </span>
-                <span class="booking-tag">
-                  <strong>Gabinete 2</strong> &mdash; João Santos &bull; 1ºB
-                </span>
-                <span class="booking-tag">
-                  <strong>Gabinete 3</strong> &mdash; Ana Oliveira &bull; 2ºA
-                </span>
-              </div>
-              <div class="capacity-info">
-                <span class="fraction">3/5</span>
-              </div>
-            </div>
-
-            <div class="schedule-row">
-              <div class="period-info">
-                <strong>2ª Aula</strong>
-                <span>08:20 - 09:10</span>
-              </div>
-              <div class="bookings-tags">
-                <span class="booking-tag">
-                  <strong>Gabinete 1</strong> &mdash; Maria Silva &bull; 2ºB
-                </span>
-              </div>
-              <div class="capacity-info">
-                <span class="fraction">1/5</span>
-              </div>
-            </div>
-
-            <div class="schedule-row empty-row">
-              <div class="period-info">
-                <strong>3ª Aula</strong>
-                <span>09:30 - 10:20</span>
-              </div>
-              <div class="bookings-tags">
-                <span class="empty-text">Nenhuma reserva</span>
-              </div>
-              <div class="capacity-info">
-                <span class="fraction">0/5</span>
-              </div>
-            </div>
-
-            <div class="schedule-row empty-row">
-              <div class="period-info">
-                <strong>4ª Aula</strong>
-                <span>10:20 - 11:10</span>
-              </div>
-              <div class="bookings-tags">
-                <span class="empty-text">Nenhuma reserva</span>
-              </div>
-              <div class="capacity-info">
-                <span class="fraction">0/5</span>
-              </div>
-            </div>
-          </div>-->
-
 
         </div>
       </section>
@@ -234,19 +173,6 @@
 
   .page-header {
     margin-bottom: 0.5rem;
-  }
-
-  .view-title {
-    font-size: 1.75rem;
-    font-weight: 700;
-    color: var(--surface-900, #0f172a);
-    margin: 0 0 0.25rem 0;
-  }
-
-  .view-subtitle {
-    font-size: 0.95rem;
-    color: var(--surface-500, #64748b);
-    margin: 0;
   }
 
   .current-class-banner {
@@ -345,7 +271,6 @@
       color: var(--surface-400, #94a3b8);
     }
 
-  /* --- Estilos da Programação de Hoje --- */
   .schedule-section {
     margin-top: 0.5rem;
   }
@@ -389,12 +314,12 @@
     min-width: 110px;
   }
 
-    .period-info strong {
+    .period-info .period-name {
       font-size: 0.95rem;
       color: var(--surface-900, #0f172a);
     }
 
-    .period-info span {
+    .period-info .period-time {
       font-size: 0.8rem;
       color: var(--surface-500, #64748b);
       margin-top: 0.2rem;
@@ -425,7 +350,6 @@
     color: var(--surface-500, #64748b);
   }
 
-  /* Loadings */
   .loading-state {
     display: flex;
     flex-direction: column;
