@@ -329,19 +329,6 @@ async function cancel(bookingId: number) {
     margin-bottom: 1.35rem;
   }
 
-  .view-title {
-    margin: 0;
-    color: var(--p-surface-900);
-    font-size: 1.75rem;
-    font-weight: 700;
-  }
-
-  .view-subtitle {
-    margin: 0.3rem 0 0;
-    color: var(--p-surface-500);
-    font-size: 0.9rem;
-  }
-
   .page-error {
     margin: 0.75rem 0 0;
     color: #c0392b;

@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import { computed } from 'vue'
+
 interface Booking {
   id: number
   className: string
@@ -66,33 +68,51 @@ function reserveLabel(day: Day, period: Period) {
   if (props.isLocked(day, period)) return 'Indisponível'
   return props.getAvailableCabinets(day, period).length ? 'Reservar gabinete' : 'Sem gabinetes'
 }
+
+const monthYearFormatter = new Intl.DateTimeFormat('pt-BR', {
+  month: 'long',
+  year: 'numeric'
+})
+
+const currentMonthYear = computed(() => {
+  if (!props.weekDays || props.weekDays.length === 0) return ''
+
+  const firstDayOfWeek = props.weekDays[0]?.date ?? null
+  if (!firstDayOfWeek) return ''
+  const formatted = monthYearFormatter.format(firstDayOfWeek)
+  
+  return formatted.charAt(0).toUpperCase() + formatted.slice(1)
+})
 </script>
 
 <template>
   <div>
 
-    <div class="calendar-actions"
-         aria-label="Navegação da agenda">
+    <div class="calendar-actions" aria-label="Navegação da agenda">
 
-      <button class="calendar-button icon-button"
-              type="button"
-              aria-label="Semana anterior"
-              @click="emit('moveWeek', -1)">
-        <i class="pi pi-angle-left"></i>
-      </button>
+      <h2 class="current-month-year">{{ currentMonthYear }}</h2>
 
-      <button class="calendar-button today-button"
-              type="button"
-              @click="emit('goToToday')">
-        Hoje
-      </button>
+      <div class="nav-buttons">
+        <button class="calendar-button icon-button"
+                type="button"
+                aria-label="Semana anterior"
+                @click="emit('moveWeek', -1)">
+          <i class="pi pi-angle-left"></i>
+        </button>
 
-      <button class="calendar-button icon-button"
-              type="button"
-              aria-label="Próxima semana"
-              @click="emit('moveWeek', 1)">
-        <i class="pi pi-angle-right"></i>
-      </button>
+        <button class="calendar-button today-button"
+                type="button"
+                @click="emit('goToToday')">
+          Hoje
+        </button>
+
+        <button class="calendar-button icon-button"
+                type="button"
+                aria-label="Próxima semana"
+                @click="emit('moveWeek', 1)">
+          <i class="pi pi-angle-right"></i>
+        </button>
+      </div>
 
     </div>
 
@@ -121,11 +141,6 @@ function reserveLabel(day: Day, period: Period) {
           <small v-if="day.isToday"
                  class="today-label">
             Hoje
-          </small>
-
-          <small v-else-if="day.isPast"
-                 class="blocked-label">
-            Bloqueado
           </small>
 
         </div>
@@ -204,7 +219,8 @@ function reserveLabel(day: Day, period: Period) {
 
           </div>
 
-          <button class="reserve-button"
+          <button v-if="!day.isPast"
+                  class="reserve-button"
                   type="button"
                   :disabled="!canReserve(day, period)"
                   @click.stop="emit('openReservation', day, period)">
@@ -239,44 +255,6 @@ function reserveLabel(day: Day, period: Period) {
 
     </div>
 
-    <div v-if="props.selectedSlot"
-         class="selection-summary">
-
-      <i class="pi pi-info-circle"></i>
-
-      <span>
-
-        <strong>
-          {{ props.selectedSlot.period.label }}
-        </strong>
-
-        em
-
-        {{ capitalize(props.selectedSlot.day.label) }},
-
-        {{ formatDayNumber(props.selectedSlot.day.date) }}
-
-        ·
-
-        {{ props.selectedSlot.period.time }}
-
-      </span>
-
-      <span class="summary-status">
-
-        {{
-          props.getBookings(
-            props.selectedSlot.day,
-            props.selectedSlot.period,
-          ).length
-            ? 'Horário com reserva'
-            : 'Horário disponível'
-        }}
-
-      </span>
-
-    </div>
-
   </div>
 </template>
 
@@ -284,9 +262,22 @@ function reserveLabel(day: Day, period: Period) {
   .calendar-actions {
     display: flex;
     align-items: center;
-    justify-content: flex-end;
+    justify-content: space-between;
     gap: 0.55rem;
     margin-bottom: 1rem;
+  }
+
+  .current-month-year {
+    margin: 0;
+    font-size: 1.15rem;
+    font-weight: 600;
+    color: var(--p-surface-800);
+  }
+
+  .nav-buttons {
+    display: flex;
+    align-items: center;
+    gap: 0.55rem;
   }
 
   .calendar-button {
@@ -596,44 +587,9 @@ function reserveLabel(day: Day, period: Period) {
     font-weight: 500;
   }
 
-  .selection-summary {
-    display: flex;
-    align-items: center;
-    gap: 0.65rem;
-    margin-top: 1rem;
-    padding: 0.85rem 1rem;
-    border: 1px solid #d9e6f7;
-    border-radius: 0.5rem;
-    color: var(--p-surface-600);
-    background: #f4f8fd;
-    font-size: 0.8rem;
-  }
-
-    .selection-summary > i {
-      color: #4e8dd3;
-      font-size: 0.9rem;
-    }
-
-  .summary-status {
-    margin-left: auto;
-    color: var(--p-surface-500);
-    font-size: 0.72rem;
-  }
-
   @media (max-width: 700px) {
     .calendar-grid {
       min-width: 66rem;
-    }
-
-    .selection-summary {
-      align-items: flex-start;
-      flex-wrap: wrap;
-      font-size: 0.75rem;
-    }
-
-    .summary-status {
-      width: 100%;
-      margin-left: 1.55rem;
     }
   }
 </style>
