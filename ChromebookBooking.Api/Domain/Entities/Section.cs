@@ -1,4 +1,5 @@
-﻿using ChromebookBooking.Api.Domain.Common.Exceptions;
+﻿using ChromebookBooking.Api.Domain.Common.Enums;
+using ChromebookBooking.Api.Domain.Common.Exceptions;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
@@ -15,6 +16,9 @@ public sealed class Section
     public string Name { get; private set; } = string.Empty;
 
     // ALTER TABLE
+    public Shift? Shift { get; set; }
+
+    // ALTER TABLE
     public bool? IsActive { get; private set; }
 
     private readonly List<User> _users = [];
@@ -22,17 +26,19 @@ public sealed class Section
 
     private Section() { }
 
-    public Section(string name)
+    public Section(string name, Shift shift)
     {
         ValidateName(name);
         Name = name;
+        Shift = shift;
         IsActive = true;
     }
     
-    public void Update(string name, bool isActive)
+    public void Update(string name, Shift shift, bool isActive)
     {
         ValidateName(name);
         Name = name;
+        Shift = shift;
         IsActive = isActive;
     }
 

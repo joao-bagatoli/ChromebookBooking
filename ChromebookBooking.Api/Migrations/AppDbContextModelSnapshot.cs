@@ -134,6 +134,9 @@ namespace ChromebookBooking.Api.Migrations
                         .HasMaxLength(100)
                         .HasColumnType("character varying(100)");
 
+                    b.Property<int?>("Shift")
+                        .HasColumnType("integer");
+
                     b.HasKey("Id");
 
                     b.ToTable("Sections");

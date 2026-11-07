@@ -1,7 +1,7 @@
 import { defineStore } from 'pinia'
 import { ref, inject } from 'vue'
 import ServiceFactory from '../services/ServiceFactory'
-import type { Section } from '../types/section'
+import type { Section, Shift } from '../types/section'
 
 export const useSectionStore = defineStore('section', () => {
   const serviceFactory = inject('serviceFactory') as ServiceFactory
@@ -17,9 +17,9 @@ export const useSectionStore = defineStore('section', () => {
     }
   }
 
-  async function addSection(name: string) {
+  async function addSection(name: string, shift: Shift) {
     try {
-      const newSection = await sectionService.createSection(name)
+      const newSection = await sectionService.createSection(name, shift)
       sections.value.push(newSection)
     } catch (error) {
       console.error('Error adding user:', error)
@@ -27,12 +27,13 @@ export const useSectionStore = defineStore('section', () => {
     }
   }
 
-  async function updateSection(id: number, payload: { name: string, isActive: boolean }) {
+  async function updateSection(id: number, payload: { name: string, shift: Shift, isActive: boolean }) {
     try {
       await sectionService.updateSection(id, payload)
       const section = sections.value.find(s => s.id === id)
       if (section) {
         section.name = payload.name
+        section.shift = payload.shift
         section.isActive = payload.isActive
       }
     } catch (error) {

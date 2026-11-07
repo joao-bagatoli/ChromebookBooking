@@ -40,7 +40,7 @@ public sealed class SectionService : ISectionService
 
     public async Task<SectionResponse> CreateSectionAsync(CreateSectionRequest request)
     {
-        var section = new Section(request.Name);
+        var section = new Section(request.Name, request.Shift);
         _context.Sections.Add(section);
         await _context.SaveChangesAsync();
         return ToResponse(section);
@@ -49,7 +49,7 @@ public sealed class SectionService : ISectionService
     public async Task UpdateSectionAsync(int id, UpdateSectionRequest request)
     {
         Section section = await GetSectionAsync(id);
-        section.Update(request.Name, request.IsActive);
+        section.Update(request.Name, request.Shift, request.IsActive);
         await _context.SaveChangesAsync();
     }
 
@@ -68,6 +68,6 @@ public sealed class SectionService : ISectionService
 
     private static SectionResponse ToResponse(Section section)
     {
-        return new SectionResponse(section.Id, section.Name, section.IsActive);
+        return new SectionResponse(section.Id, section.Name, section.Shift, section.IsActive);
     }
 }
