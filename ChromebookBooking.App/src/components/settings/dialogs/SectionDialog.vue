@@ -8,6 +8,7 @@
   import ToggleSwitch from 'primevue/toggleswitch'
   import Select from 'primevue/select'
   import { useToast } from 'primevue/usetoast'
+  import { type Shift } from '@/types/section'
 
   const visible = defineModel<boolean>('visible', { default: false })
   const props = defineProps<{
@@ -66,7 +67,7 @@
         await sectionStore.updateSection(props.item!.id, {
           name: form.value.name,
           isActive: form.value.isActive,
-          shift: form.value.shift
+          shift: form.value.shift as Shift
         })
         toast.add({
           severity: 'success',
@@ -75,7 +76,7 @@
           life: 3000
         })
       } else {
-        await sectionStore.addSection(form.value.name, form.value.shift)
+        await sectionStore.addSection(form.value.name, form.value.shift as Shift)
         toast.add({
           severity: 'success',
           summary: 'Sucesso',
