@@ -57,7 +57,7 @@ public sealed class UserService : IUserService
             throw new InvalidOperationException($"O email '{request.Email}' já está cadastrado no sistema.");
         }
 
-        var user = new User(email, request.Role);
+        var user = new User(request.Name, email, request.Role);
 
         if (user.IsTeacher && request.SectionIds is not null && request.SectionIds.Any())
         {

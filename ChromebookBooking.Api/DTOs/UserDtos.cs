@@ -2,7 +2,7 @@
 
 namespace ChromebookBooking.Api.DTOs;
 
-public sealed record CreateUserRequest(string Email, UserRole Role, IEnumerable<int> SectionIds = null);
+public sealed record CreateUserRequest(string Name, string Email, UserRole Role, IEnumerable<int> SectionIds = null);
 
 public sealed record UpdateUserRequest(UserRole Role, bool IsActive, IEnumerable<int> SectionIds = null);
 

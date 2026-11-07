@@ -15,6 +15,9 @@ public sealed class User
 
     public Guid? AuthUserId { get; private set; }
 
+    // ALTER TABLE
+    public string? Name { get; private set; }
+
     public Email Email { get; private set; }
 
     [Required]
@@ -28,8 +31,9 @@ public sealed class User
 
     private User() { }
 
-    public User(Email email, UserRole role)
+    public User(string name, Email email, UserRole role)
     {
+        Name = name;
         Email = email;
         Role = role;
         IsActive = true;
@@ -45,10 +49,6 @@ public sealed class User
         if (!IsTeacher)
             ClearSections();
     }
-
-    //public void Deactivate() => IsActive = false;
-
-    //public void Activate() => IsActive = true;
 
     public void SetStatus(bool isActive) => IsActive = isActive;
 

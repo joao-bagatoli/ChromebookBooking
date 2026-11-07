@@ -50,22 +50,6 @@ public sealed class UsersController : ControllerBase
         return NoContent();
     }
 
-    //[HttpPatch("{id}/activate")]
-    //[Authorize(Roles = nameof(UserRole.Admin))]
-    //public async Task<IActionResult> ActivateUser(int id)
-    //{
-    //    await _service.ActivateUserAsync(id);
-    //    return NoContent();
-    //}
-
-    //[HttpPatch("{id}/deactivate")]
-    //[Authorize(Roles = nameof(UserRole.Admin))]
-    //public async Task<IActionResult> DeactivateUser(int id)
-    //{
-    //    await _service.DeactivateUserAsync(id);
-    //    return NoContent();
-    //}
-
     [HttpGet("me")]
     [Authorize]
     public async Task<IActionResult> Me()
