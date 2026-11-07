@@ -76,6 +76,11 @@
 <template>
   <div>
     <DataTable :value="filteredSections" :loading="loading">
+
+      <template #empty>
+        Nenhuma turma encontrada.
+      </template>
+
       <Column field="name" header="Turma"></Column>
 
       <Column field="isActive" header="Status">
