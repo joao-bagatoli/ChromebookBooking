@@ -2,6 +2,7 @@ import { type Section } from './section'
 
 export interface User {
   id: number
+  name: string
   email: string
   role: UserRole
   isActive: boolean

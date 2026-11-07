@@ -39,6 +39,11 @@ public sealed class User
         IsActive = true;
     }
 
+    public void UpdateName(string name)
+    {
+        Name = name;
+    }
+
     public void ChangeRole(UserRole newRole)
     {
         if (Role == newRole)

@@ -85,13 +85,9 @@ public sealed class UserService : IUserService
             throw new KeyNotFoundException($"Usuário com ID {id} não encontrado.");
         }
 
+        user.UpdateName(request.Name);
         user.ChangeRole(request.Role);
         user.SetStatus(request.IsActive);
-
-        //if (user.Role != request.Role)
-        //{
-        //    user.ChangeRole(request.Role);
-        //}
 
         if (user.IsTeacher)
         {
@@ -105,28 +101,6 @@ public sealed class UserService : IUserService
 
         await _context.SaveChangesAsync();
     }
-
-    //public async Task ActivateUserAsync(int id)
-    //{
-    //    var user = await _context.Users.FindAsync(id);
-    //    if (user is null)
-    //    {
-    //        throw new KeyNotFoundException($"Usuário com ID {id} não encontrado.");
-    //    }
-    //    user.Activate();
-    //    await _context.SaveChangesAsync();
-    //}
-
-    //public async Task DeactivateUserAsync(int id)
-    //{
-    //    var user = await _context.Users.FindAsync(id);
-    //    if (user is null)
-    //    {
-    //        throw new KeyNotFoundException($"Usuário com ID {id} não encontrado.");
-    //    }
-    //    user.Deactivate();
-    //    await _context.SaveChangesAsync();
-    //}
 
     public async Task<LoggedUserResponse> GetLoggedUserAsync(Guid authUserId, string email)
     {
@@ -200,6 +174,6 @@ public sealed class UserService : IUserService
             .Select(s => new SectionResponse(s.Id, s.Name, s.IsActive))
             .ToList();
 
-        return new UserResponse(user.Id, user.Email.Value, user.Role, user.IsActive, sections);
+        return new UserResponse(user.Id, user.Name, user.Email.Value, user.Role, user.IsActive, sections);
     }
 }
