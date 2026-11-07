@@ -19,6 +19,7 @@ public sealed class SectionService : ISectionService
     {
         return await _context.Sections
             .AsNoTracking()
+            .OrderBy(s => s.Name)
             .Select(s => ToResponse(s))
             .ToListAsync();
     }
