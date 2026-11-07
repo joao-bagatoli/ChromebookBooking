@@ -32,6 +32,13 @@
   }
 
   async function onDeleteUser(data: any) {
+    toast.add({
+      severity: 'info',
+      summary: 'Aguarde',
+      detail: 'Deletando o usuário...',
+      life: 2000
+    })
+
     try {
       await userStore.deleteUser(data.id)
       toast.add({
