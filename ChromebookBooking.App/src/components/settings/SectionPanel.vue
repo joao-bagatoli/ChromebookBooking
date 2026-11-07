@@ -1,69 +1,81 @@
 <script setup lang="ts">
-import { onMounted, computed } from 'vue'
-import { useSectionStore } from '@/stores/section'
-import DataTable from 'primevue/datatable'
-import Column from 'primevue/column'
-import Button from 'primevue/button'
-import Tag from 'primevue/tag'
-import { useToast } from 'primevue/usetoast' 
+  import { onMounted, computed, ref } from 'vue'
+  import { useSectionStore } from '@/stores/section'
+  import DataTable from 'primevue/datatable'
+  import Column from 'primevue/column'
+  import Button from 'primevue/button'
+  import Tag from 'primevue/tag'
+  import { useToast } from 'primevue/usetoast'
 
-const props = defineProps<{
+  const props = defineProps<{
     search: string
-}>()
+  }>()
 
-const sectionStore = useSectionStore()
+  const sectionStore = useSectionStore()
+  const emit = defineEmits(['edit'])
+  const toast = useToast()
 
-const emit = defineEmits(['edit'])
+  const loading = ref(true)
 
-const toast = useToast()
-
-function getSectionStatus(isActive: boolean) {
-  return isActive ? 'Ativa' : 'Inativa'
-}
-
-function getSectionStatusSeverity(isActive: boolean) {
-  return isActive ? 'success' : 'danger'
-}
-
-function onEditSection(data: any) {
-  emit('edit', data)
-}
-
-async function onDeleteSection(data: any) {
-  try {
-    await sectionStore.deleteSection(data.id)
-    toast.add({
-      severity: 'success',
-      summary: 'Sucesso',
-      detail: 'Turma deletada com sucesso!',
-      life: 3000
-    })
-  } catch {
-    toast.add({
-      severity: 'error',
-      summary: 'Erro',
-      detail: 'Não foi possível deletar a turma.',
-      life: 3000
-    })
+  function getSectionStatus(isActive: boolean) {
+    return isActive ? 'Ativa' : 'Inativa'
   }
-}
 
-const filteredSections = computed(() => {
-  const query = props.search.toLowerCase()
-  if (!query) return sectionStore.sections
-  return sectionStore.sections.filter((section) => {
-    return section.name.toLowerCase().includes(query)
+  function getSectionStatusSeverity(isActive: boolean) {
+    return isActive ? 'success' : 'danger'
+  }
+
+  function onEditSection(data: any) {
+    emit('edit', data)
+  }
+
+  async function onDeleteSection(data: any) {
+    toast.add({
+      severity: 'info',
+      summary: 'Aguarde',
+      detail: 'Deletando a turma...',
+      life: 2000
+    })
+
+    try {
+      await sectionStore.deleteSection(data.id)
+      toast.add({
+        severity: 'success',
+        summary: 'Sucesso',
+        detail: 'Turma deletada com sucesso!',
+        life: 3000
+      })
+    } catch {
+      toast.add({
+        severity: 'error',
+        summary: 'Erro',
+        detail: 'Não foi possível deletar a turma.',
+        life: 3000
+      })
+    }
+  }
+
+  const filteredSections = computed(() => {
+    const query = props.search.toLowerCase()
+    if (!query) return sectionStore.sections
+    return sectionStore.sections.filter((section) => {
+      return section.name.toLowerCase().includes(query)
+    })
   })
-})
 
-onMounted(async () => {
-  await sectionStore.loadSections()
-})
+  onMounted(async () => {
+    loading.value = true
+    try {
+      await sectionStore.loadSections()
+    } finally {
+      loading.value = false
+    }
+  })
 </script>
 
 <template>
   <div>
-    <DataTable :value="filteredSections">
+    <DataTable :value="filteredSections" :loading="loading">
       <Column field="name" header="Turma"></Column>
 
       <Column field="isActive" header="Status">
@@ -101,5 +113,4 @@ onMounted(async () => {
   </div>
 </template>
 
-<style scoped>
-</style>
+<style scoped></style>
