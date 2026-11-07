@@ -8,6 +8,8 @@ namespace ChromebookBooking.Tests.Domain;
 
 public class UserTests
 {
+    private const string Name = "Teste";
+
     private static Email CreateValidEmail()
     {
         return Email.Create("teste@edu.joinville.sc.gov.br");
@@ -21,7 +23,7 @@ public class UserTests
         var role = UserRole.Teacher;
 
         // Act
-        var user = new User(email, role);
+        var user = new User(Name, email, role);
 
         // Assert
         Assert.Equal(email, user.Email);
@@ -36,7 +38,7 @@ public class UserTests
     public void SetStatus_Should_Update_IsActive(bool isActive)
     {
         // Arrange
-        var user = new User(CreateValidEmail(), UserRole.Teacher);
+        var user = new User(Name, CreateValidEmail(), UserRole.Teacher);
 
         // Act
         user.SetStatus(isActive);
@@ -49,7 +51,7 @@ public class UserTests
     public void ChangeRole_Should_Update_UserRole()
     {
         // Arrange
-        var user = new User(CreateValidEmail(), UserRole.Teacher);
+        var user = new User(Name, CreateValidEmail(), UserRole.Teacher);
         var newRole = UserRole.Admin;
 
         // Act
@@ -64,7 +66,7 @@ public class UserTests
     public void ChangeRole_Should_Clear_Sections_When_Changing_From_Teacher_To_Admin()
     {
         // Arrange
-        var user = new User(CreateValidEmail(), UserRole.Teacher);
+        var user = new User(Name, CreateValidEmail(), UserRole.Teacher);
         var sections = new List<Section>{ 
             new Section("1º A"), 
             new Section("2º B"), 
@@ -83,7 +85,7 @@ public class UserTests
     public void UpdateSections_NonTeacher_Should_Throw_Exception()
     {
         // Arrange
-        var user = new User(CreateValidEmail(), UserRole.Admin);
+        var user = new User(Name, CreateValidEmail(), UserRole.Admin);
         var sections = new List<Section>{ 
             new Section("1º A"), 
             new Section("2º B") 
@@ -97,7 +99,7 @@ public class UserTests
     public void LinkSupabaseAccount_Should_Set_AuthUserId()
     {
         // Arrange
-        var user = new User(CreateValidEmail(), UserRole.Teacher);
+        var user = new User(Name, CreateValidEmail(), UserRole.Teacher);
         var authUserId = Guid.NewGuid();
 
         // Act
@@ -111,7 +113,7 @@ public class UserTests
     public void GetAccessibleModules_Teacher_Should_Return_Schedule_Module()
     {
         // Arrange
-        var user = new User(CreateValidEmail(), UserRole.Teacher);
+        var user = new User(Name, CreateValidEmail(), UserRole.Teacher);
 
         // Act
         var modules = user.GetAccessibleModules();
@@ -125,7 +127,7 @@ public class UserTests
     public void GetAccessibleModules_Admin_Should_Return_All_Modules()
     {
         // Arrange
-        var user = new User(CreateValidEmail(), UserRole.Admin);
+        var user = new User(Name, CreateValidEmail(), UserRole.Admin);
 
         // Act
         var modules = user.GetAccessibleModules();

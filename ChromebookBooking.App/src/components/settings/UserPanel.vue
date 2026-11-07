@@ -65,6 +65,8 @@
 <template>
   <div>
     <DataTable :value="filteredUsers">
+      <Column field="name" header="Nome"></Column>
+
       <Column field="email" header="E-mail"></Column>
 
       <Column field="role" header="Perfil">

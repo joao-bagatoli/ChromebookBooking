@@ -25,6 +25,7 @@ const toast = useToast()
 const isLoading = ref(false)
 
 const form = ref({
+  name: '',
   email: '',
   role: 'Teacher',
   isActive: false,
@@ -39,6 +40,7 @@ const roleOptions = ref([
 const activeSections = computed(() => sectionStore.sections.filter(s => s.isActive))
 
 function clearForm() {
+  form.value.name = ''
   form.value.email = ''
   form.value.role = 'Teacher'
   form.value.isActive = false
@@ -47,6 +49,7 @@ function clearForm() {
 
 watch(() => props.item, (newVal) => {
   if (newVal) {
+    form.value.name = newVal.name ?? ''
     form.value.email = newVal.email
     form.value.role = newVal.role
     form.value.isActive = newVal.isActive ?? false
@@ -55,12 +58,6 @@ watch(() => props.item, (newVal) => {
     clearForm()
   }
 }, { immediate: true })
-
-// watch(visible, async (isVisible) => {
-//   if (isVisible) {
-//     sectionStore.loadSections()
-//   }
-// })
 
 const isEditing = computed(() => props.item !== null && props.item !== undefined)
 
@@ -73,6 +70,16 @@ function closeDialog() {
 const isTeacher = computed(() => form.value.role === 'Teacher')
 
 const handleSave = async () => {
+  if (!form.value.name && !isEditing.value) {
+    toast.add({
+      severity: 'warn',
+      summary: 'Aviso',
+      detail: 'Informe o nome do usuário.',
+      life: 3000
+    })
+    return
+  }
+
   if (!form.value.email && !isEditing.value) {
     toast.add({
       severity: 'warn',
@@ -100,6 +107,7 @@ const handleSave = async () => {
 
     if (isEditing.value) {
       await userStore.updateUser(props.item!.id, {
+        name: form.value.name,
         role: form.value.role as UserRole,
         isActive: form.value.isActive,
         sectionIds: finalSectionIds
@@ -111,7 +119,7 @@ const handleSave = async () => {
         life: 3000
       })
     } else {
-      await userStore.addUser(form.value.email, form.value.role as UserRole, finalSectionIds)
+      await userStore.addUser(form.value.name, form.value.email, form.value.role as UserRole, finalSectionIds)
       toast.add({
         severity: 'success',
         summary: 'Sucesso',
@@ -137,6 +145,10 @@ const handleSave = async () => {
 <template>
   <Dialog v-model:visible="visible" modal :header="dialogTitle" :style="{ width: '30rem' }">
     <div class="form-container">
+      <div class="form-group">
+        <label for="name">Nome</label>
+        <InputText id="name" v-model="form.name" autocomplete="off" :disabled="isLoading" />
+      </div>
       <div class="form-group">
         <label for="email">Email</label>
         <InputText id="email" v-model="form.email" autocomplete="off" :disabled="isLoading || isEditing" />
