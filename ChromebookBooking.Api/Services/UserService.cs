@@ -150,7 +150,7 @@ public sealed class UserService : IUserService
         }
 
         var sections = user.Sections
-            .Select(s => new SectionResponse(s.Id, s.Name, s.IsActive))
+            .Select(s => new SectionResponse(s.Id, s.Name, s.Shift, s.IsActive))
             .ToList();
 
         return sections;
@@ -171,7 +171,7 @@ public sealed class UserService : IUserService
     private static UserResponse ToResponse(User user)
     {
         var sections = user.Sections
-            .Select(s => new SectionResponse(s.Id, s.Name, s.IsActive))
+            .Select(s => new SectionResponse(s.Id, s.Name, s.Shift, s.IsActive))
             .ToList();
 
         return new UserResponse(user.Id, user.Name, user.Email.Value, user.Role, user.IsActive, sections);

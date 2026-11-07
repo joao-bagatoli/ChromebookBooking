@@ -1,4 +1,5 @@
-﻿using ChromebookBooking.Api.Domain.Common.Exceptions;
+﻿using ChromebookBooking.Api.Domain.Common.Enums;
+using ChromebookBooking.Api.Domain.Common.Exceptions;
 using ChromebookBooking.Api.Domain.Entities;
 
 namespace ChromebookBooking.Tests.Domain;
@@ -12,7 +13,7 @@ public class SectionTests
         string name = "1º A";
 
         // Act
-        var section = new Section(name);
+        var section = new Section(name, Shift.Morning);
 
         // Assert
         Assert.Equal(name, section.Name);
@@ -26,19 +27,20 @@ public class SectionTests
     public void Constructor_Should_Throw_Exception_For_Invalid_Name(string invalidName)
     {
         // Act & Assert
-        Assert.Throws<DomainException>(() => new Section(invalidName));
+        Assert.Throws<DomainException>(() => new Section(invalidName, Shift.Morning));
     }
 
     [Fact]
     public void Update_Should_Change_Properties_When_Valid()
     {
         // Arrange
-        var section = new Section("1º B");
-        string newName = "1º C";
+        var section = new Section("1º A", Shift.Morning);
+        string newName = "1º B";
+        Shift newShift = Shift.Afternoon;
         bool newActiveStatus = false;
 
         // Act
-        section.Update(newName, newActiveStatus);
+        section.Update(newName, newShift, newActiveStatus);
 
         // Assert
         Assert.Equal(newName, section.Name);
@@ -52,9 +54,9 @@ public class SectionTests
     public void Update_Should_Throw_Exception_For_Invalid_Name(string invalidName)
     {
         // Arrange
-        var section = new Section("1º D");
+        var section = new Section("1º D", Shift.Afternoon);
 
         // Act & Assert
-        Assert.Throws<DomainException>(() => section.Update(invalidName, true));
+        Assert.Throws<DomainException>(() => section.Update(invalidName, Shift.Afternoon, true));
     }
 }

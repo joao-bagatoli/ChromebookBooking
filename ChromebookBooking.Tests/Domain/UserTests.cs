@@ -68,9 +68,9 @@ public class UserTests
         // Arrange
         var user = new User(Name, CreateValidEmail(), UserRole.Teacher);
         var sections = new List<Section>{ 
-            new Section("1º A"), 
-            new Section("2º B"), 
-            new Section("3º C") 
+            new Section("1º A", Shift.Morning), 
+            new Section("2º B", Shift.Afternoon), 
+            new Section("3º C", Shift.Afternoon) 
         };
         user.UpdateSections(sections);
 
@@ -87,8 +87,8 @@ public class UserTests
         // Arrange
         var user = new User(Name, CreateValidEmail(), UserRole.Admin);
         var sections = new List<Section>{ 
-            new Section("1º A"), 
-            new Section("2º B") 
+            new Section("1º A", Shift.Morning), 
+            new Section("2º B", Shift.Afternoon) 
         };
 
         // Act & Assert

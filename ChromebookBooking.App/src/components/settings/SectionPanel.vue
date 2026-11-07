@@ -25,6 +25,18 @@
     return isActive ? 'success' : 'danger'
   }
 
+  function getShiftLabel(shift: string) {
+    if (shift === 'Morning') return 'Matutino'
+    if (shift === 'Afternoon') return 'Vespertino'
+    return 'Não definido'
+  }
+
+  function getShiftSeverity(shift: string) {
+    if (shift === 'Morning') return 'info'
+    if (shift === 'Afternoon') return 'warn'
+    return 'secondary'
+  }
+
   function onEditSection(data: any) {
     emit('edit', data)
   }
@@ -83,6 +95,17 @@
 
       <Column field="name" header="Turma"></Column>
 
+      <Column field="shift" header="Turno">
+        <template #body="{ data }">
+          <Tag v-if="data.shift"
+               :value="getShiftLabel(data.shift)"
+               :severity="getShiftSeverity(data.shift)"
+               rounded>
+          </Tag>
+          <span v-else class="text-gray-500">-</span>
+        </template>
+      </Column>
+
       <Column field="isActive" header="Status">
         <template #body="{ data }">
           <Tag :value="getSectionStatus(data.isActive)"
@@ -99,7 +122,7 @@
                     text
                     rounded
                     severity="secondary"
-                    arial-label="Editar"
+                    aria-label="Editar"
                     title="Editar"
                     @click="onEditSection(data)">
             </Button>
@@ -107,7 +130,7 @@
                     text
                     rounded
                     severity="danger"
-                    arial-label="Excluir"
+                    aria-label="Excluir"
                     title="Excluir"
                     @click="onDeleteSection(data)">
             </Button>
