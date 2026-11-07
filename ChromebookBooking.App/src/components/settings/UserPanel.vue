@@ -1,5 +1,5 @@
 <script setup lang="ts">
-  import { onMounted, computed } from 'vue'
+  import { onMounted, computed, ref } from 'vue'
   import { useUserStore } from '@/stores/user'
   import DataTable from 'primevue/datatable'
   import Column from 'primevue/column'
@@ -13,10 +13,11 @@
   }>()
 
   const userStore = useUserStore()
-
   const toast = useToast()
 
   const emit = defineEmits(['edit'])
+
+  const loading = ref(true)
 
   function getUserStatus(isActive: boolean) {
     return isActive ? 'Ativo' : 'Inativo'
@@ -53,18 +54,23 @@
     const query = props.search.toLowerCase()
     if (!query) return userStore.users
     return userStore.users.filter((user) => {
-        return user.email.toLowerCase().includes(query) || getRoleLabel(user.role).toLowerCase().includes(query)
+      return user.email.toLowerCase().includes(query) || getRoleLabel(user.role).toLowerCase().includes(query)
     })
   })
 
   onMounted(async () => {
-    await userStore.loadUsers()
+    loading.value = true
+    try {
+      await userStore.loadUsers()
+    } finally {
+      loading.value = false
+    }
   })
 </script>
 
 <template>
   <div>
-    <DataTable :value="filteredUsers">
+    <DataTable :value="filteredUsers" :loading="loading">
       <Column field="name" header="Nome"></Column>
 
       <Column field="email" header="E-mail"></Column>
@@ -113,5 +119,4 @@
   </div>
 </template>
 
-<style scoped>
-</style>
+<style scoped></style>
