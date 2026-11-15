@@ -33,6 +33,11 @@ public sealed class BookingService : IBookingService
             throw new InvalidOperationException($"As reservas devem ser feitas com no mínimo {MINIMUM_HOURS} horas de antecedência");
         }
 
+        if (await IsTeacherAlreadyBooked(date, classPeriodId, teacherId))
+        {
+            throw new InvalidOperationException("Você já possui uma reserva para este mesmo horário em outra turma.");
+        }
+
         var activeCabinets = await _context.Cabinets
             .AsNoTracking()
             .Where(c => c.IsActive == true)
@@ -69,6 +74,15 @@ public sealed class BookingService : IBookingService
         DateTime classStartDate = date.ToDateTime(classPeriod.StartTime);
         TimeSpan timeUntilClass = classStartDate - DateTime.Now;
         return timeUntilClass.TotalHours >= MINIMUM_HOURS;
+    }
+
+    private async Task<bool> IsTeacherAlreadyBooked(DateOnly date, int classPeriodId, int teacherId)
+    {
+        return await _context.Bookings
+            .AnyAsync(b => b.Date == date &&
+                           b.ClassPeriodId == classPeriodId &&
+                           b.TeacherId == teacherId &&
+                           !b.IsCancelled);
     }
 
     private async Task<ClassPeriod?> GetClassPeriodByIdAsync(int id)
