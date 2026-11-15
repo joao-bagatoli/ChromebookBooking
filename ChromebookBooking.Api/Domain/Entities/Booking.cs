@@ -73,6 +73,16 @@ public sealed class Booking
         CreatedAt = DateTime.UtcNow;
     }
 
+    public void ChangeCabinet(int newCabinetId)
+    {
+        if (newCabinetId <= 0)
+        {
+            throw new DomainException("O ID do novo gabinete deve ser válido.");
+        }
+
+        CabinetId = newCabinetId;
+    }
+
     public void Cancel()
     {
         IsCancelled = true;

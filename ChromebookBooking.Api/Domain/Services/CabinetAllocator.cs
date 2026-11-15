@@ -5,7 +5,7 @@ namespace ChromebookBooking.Api.Domain.Services;
 
 public sealed class CabinetAllocator
 {
-    public Cabinet Allocate(
+    public AllocationResult Allocate(
         int requestClassPeriodId,
         int requestSectionId,
         IReadOnlyCollection<Cabinet> activeCabinets,
@@ -20,13 +20,11 @@ public sealed class CabinetAllocator
             throw new DomainException("Não há gabinetes disponíveis para este horário");
         }
 
-        var preferredCabinet = GetPreferredCabinet(requestClassPeriodId, requestSectionId, todaysBookings, availableCabinets);
-
-        // Retorna o preferido ou o primeiro disponível
-        return preferredCabinet ?? availableCabinets.First();
+        var allocationResult = GetAllocation(requestClassPeriodId, requestSectionId, activeCabinets, availableCabinets, todaysBookings);
+        return allocationResult;
     }
 
-    private static IReadOnlyList<Cabinet> GetAvailableCabinets(
+    private static List<Cabinet> GetAvailableCabinets(
         int requestClassPeriodId,
         IReadOnlyCollection<Cabinet> activeCabinets,
         IReadOnlyCollection<Booking> todaysBookings)
@@ -42,25 +40,49 @@ public sealed class CabinetAllocator
             .ToList();
     }
 
-    private static Cabinet? GetPreferredCabinet(
-        int requestClassPeriodId,
-        int requestSectionId,
-        IReadOnlyCollection<Booking> todaysBookings,
-        IReadOnlyList<Cabinet> availableCabinets)
+    private static AllocationResult GetAllocation(
+            int requestClassPeriodId,
+            int requestSectionId,
+            IReadOnlyCollection<Cabinet> activeCabinets,
+            IReadOnlyList<Cabinet> availableCabinets,
+            IReadOnlyCollection<Booking> todaysBookings)
     {
-        // Buscar se a turma já usou um gabinete hoje
+        // Busca se a turma usou um gabinete na AULA ANTERIOR
         var previouslyUsedCabinetId = todaysBookings
-            .Where(b => b.SectionId == requestSectionId && !b.IsCancelled && b.ClassPeriodId < requestClassPeriodId)
-            .OrderByDescending(b => b.ClassPeriodId)
+            .Where(b => b.SectionId == requestSectionId &&
+                        !b.IsCancelled &&
+                        b.ClassPeriodId == requestClassPeriodId - 1)
             .Select(b => b.CabinetId)
             .FirstOrDefault();
 
+        // Se a turma não usou gabinete na aula anterior, pega o primeiro disponível
         if (previouslyUsedCabinetId == 0)
         {
-            return null;
+            return new AllocationResult(availableCabinets.First());
         }
 
-        // Se encontrou um uso anterior, tenta alocar o mesmo gabinete
-        return availableCabinets.FirstOrDefault(c => c.Id == previouslyUsedCabinetId);
+        var preferredCabinet = activeCabinets.First(c => c.Id == previouslyUsedCabinetId);
+
+        // Se o gabinete preferido está na lista de disponíveis, apenas aloque-o
+        if (availableCabinets.Any(c => c.Id == previouslyUsedCabinetId))
+        {
+            return new AllocationResult(preferredCabinet);
+        }
+
+        // Se o preferido NÃO está disponível, outro professor o pegou. Fazemos o remanejamento (Swap)!
+        var conflictingBooking = todaysBookings.First(b =>
+            b.CabinetId == previouslyUsedCabinetId &&
+            b.ClassPeriodId == requestClassPeriodId &&
+            !b.IsCancelled);
+
+        var replacementCabinet = availableCabinets.First();
+
+        return new AllocationResult(preferredCabinet, conflictingBooking, replacementCabinet);
     }
 }
+
+public record AllocationResult(
+    Cabinet AllocatedCabinet,
+    Booking? BookingToSwap = null,
+    Cabinet? ReplacementCabinet = null
+);
