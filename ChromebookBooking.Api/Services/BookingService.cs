@@ -33,10 +33,34 @@ public sealed class BookingService : IBookingService
             throw new InvalidOperationException($"As reservas devem ser feitas com no mínimo {MINIMUM_HOURS} horas de antecedência");
         }
 
-        Cabinet cabinet = await GetAllocatedCabinetAsync(date, classPeriodId, sectionId);
+        var activeCabinets = await _context.Cabinets
+            .AsNoTracking()
+            .Where(c => c.IsActive == true)
+            .ToListAsync();
 
-        var booking = new Booking(date, classPeriodId, cabinet.Id, teacherId, sectionId, isPartial, chromebooksQuantity);
+        var todaysBookings = await _context.Bookings
+            .Where(b => b.Date == date)
+            .ToListAsync();
+
+        var allocationResult = _allocator.Allocate(classPeriodId, sectionId, activeCabinets, todaysBookings);
+
+        if (allocationResult.BookingToSwap != null && allocationResult.ReplacementCabinet != null)
+        {
+            allocationResult.BookingToSwap.ChangeCabinet(allocationResult.ReplacementCabinet.Id);
+            _context.Bookings.Update(allocationResult.BookingToSwap);
+        }
+
+        var booking = new Booking(
+            date,
+            classPeriodId,
+            allocationResult.AllocatedCabinet.Id,
+            teacherId,
+            sectionId,
+            isPartial,
+            chromebooksQuantity);
+
         await _context.Bookings.AddAsync(booking);
+
         await _context.SaveChangesAsync();
     }
 
@@ -53,22 +77,6 @@ public sealed class BookingService : IBookingService
             .AsNoTracking()
             .Where(cp => cp.Id == id)
             .FirstOrDefaultAsync();
-    }
-
-    private async Task<Cabinet> GetAllocatedCabinetAsync(DateOnly date, int classPeriodId, int sectionId)
-    {
-        var activeCabinets = await _context.Cabinets
-            .AsNoTracking()
-            .Where(c => c.IsActive == true)
-            .ToListAsync();
-
-        var todaysBooking = await _context.Bookings
-            .AsNoTracking()
-            .Where(b => b.Date == date)
-            .ToListAsync();
-
-        Cabinet allocated = _allocator.Allocate(classPeriodId, sectionId, activeCabinets, todaysBooking);
-        return allocated;
     }
 
     public async Task CancelBookingAsync(int bookingId, Guid authUserId)
@@ -121,6 +129,7 @@ public sealed class BookingService : IBookingService
                 b.CabinetId,
                 b.Cabinet!.Name,
                 b.Teacher!.Id,
+                b.Teacher!.Name,
                 b.Teacher!.Email.Value,
                 b.Section!.Id,
                 b.Section!.Name,
@@ -145,6 +154,7 @@ public sealed class BookingService : IBookingService
                 b.CabinetId,
                 b.Cabinet!.Name,
                 b.Teacher!.Id,
+                b.Teacher!.Name,
                 b.Teacher!.Email.Value,
                 b.Section!.Id,
                 b.Section!.Name,

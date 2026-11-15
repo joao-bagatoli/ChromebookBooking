@@ -44,10 +44,10 @@ public class CabinetAllocatorTests
         var todaysBookings = new List<Booking>
         {
             new Booking(
-                date: _defaultDate, 
-                classPeriodId: FIRST_CLASS_PERIOD, 
-                cabinetId: 1, 
-                teacherId: _defaultTeacherId, 
+                date: _defaultDate,
+                classPeriodId: FIRST_CLASS_PERIOD,
+                cabinetId: 1,
+                teacherId: _defaultTeacherId,
                 sectionId: _defaultSectionId)
         };
 
@@ -71,7 +71,7 @@ public class CabinetAllocatorTests
         var todayBookings = new List<Booking>
         {
             new Booking(
-                _defaultDate, 
+                _defaultDate,
                 classPeriodId: FIRST_CLASS_PERIOD,
                 cabinetId: 2,
                 teacherId: _defaultTeacherId,
@@ -79,12 +79,14 @@ public class CabinetAllocatorTests
         };
 
         // Act
-        var cabinet = _allocator.Allocate(SECOND_CLASS_PERIOD, _defaultSectionId, activeCabinets, todayBookings);
+        var result = _allocator.Allocate(SECOND_CLASS_PERIOD, _defaultSectionId, activeCabinets, todayBookings);
 
         // Assert
-        Assert.NotNull(cabinet);
-        Assert.Equal(2, cabinet.Id); // Embora o Cabinet A seja o primeiro da lista, o alocador deve reservar o B
-        Assert.Equal("Cabinet B", cabinet.Name);
+        Assert.NotNull(result);
+        Assert.NotNull(result.AllocatedCabinet);
+        Assert.Equal(2, result.AllocatedCabinet.Id); // Embora o Cabinet A seja o primeiro da lista, o alocador deve reservar o B
+        Assert.Equal("Cabinet B", result.AllocatedCabinet.Name);
+        Assert.Null(result.BookingToSwap);
     }
 
     [Fact]
@@ -107,12 +109,14 @@ public class CabinetAllocatorTests
         };
 
         // Act
-        var cabinet = _allocator.Allocate(FIRST_CLASS_PERIOD, _defaultSectionId, activeCabinets, todaysBooking);
-        
+        var result = _allocator.Allocate(FIRST_CLASS_PERIOD, _defaultSectionId, activeCabinets, todaysBooking);
+
         // Assert
-        Assert.NotNull(cabinet);
-        Assert.Equal(2, cabinet.Id); // O alocador deve pular o Cabinet A, por estar ocupado
-        Assert.Equal("Cabinet B", cabinet.Name);
+        Assert.NotNull(result);
+        Assert.NotNull(result.AllocatedCabinet);
+        Assert.Equal(2, result.AllocatedCabinet.Id); // O alocador deve pular o Cabinet A, por estar ocupado
+        Assert.Equal("Cabinet B", result.AllocatedCabinet.Name);
+        Assert.Null(result.BookingToSwap);
     }
 
     [Fact]
@@ -134,12 +138,13 @@ public class CabinetAllocatorTests
         var todaysBooking = new List<Booking> { cancelledBooking };
 
         // Act
-        var cabinet = _allocator.Allocate(FIRST_CLASS_PERIOD, _defaultSectionId, activeCabinets, todaysBooking);
+        var result = _allocator.Allocate(FIRST_CLASS_PERIOD, _defaultSectionId, activeCabinets, todaysBooking);
 
         // Assert
-        Assert.NotNull(cabinet);
-        Assert.Equal(1, cabinet.Id);
-        Assert.Equal("Cabinet A", cabinet.Name);
+        Assert.NotNull(result);
+        Assert.NotNull(result.AllocatedCabinet);
+        Assert.Equal(1, result.AllocatedCabinet.Id);
+        Assert.Equal("Cabinet A", result.AllocatedCabinet.Name);
     }
 
     [Fact]
@@ -160,16 +165,18 @@ public class CabinetAllocatorTests
         };
 
         // Act
-        var cabinet = _allocator.Allocate(THIRD_CLASS_PERIOD, _defaultSectionId, activeCabinets, todaysBookings);
+        // Como estamos pedindo para a 3ª Aula, a aula imediatamente anterior é a 2ª Aula (Cabinet B)
+        var result = _allocator.Allocate(THIRD_CLASS_PERIOD, _defaultSectionId, activeCabinets, todaysBookings);
 
         // Assert
-        Assert.NotNull(cabinet);
-        Assert.Equal(2, cabinet.Id); // Deve ignorar o Cabinet A e alocar o B, pois foi o último utilizado
-        Assert.Equal("Cabinet B", cabinet.Name);
+        Assert.NotNull(result);
+        Assert.NotNull(result.AllocatedCabinet);
+        Assert.Equal(2, result.AllocatedCabinet.Id); // Deve ignorar o Cabinet A e alocar o B, pois foi o utilizado na aula imediatamente anterior
+        Assert.Equal("Cabinet B", result.AllocatedCabinet.Name);
     }
 
     [Fact]
-    public void Allocate_Should_Fallback_To_Another_Cabinet_When_Previously_Used_Is_Occupied()
+    public void Allocate_Should_Swap_Booking_When_Previously_Used_Cabinet_Is_Occupied()
     {
         // Arrange
         var cabinetA = CreateCabinet(1, "Cabinet A");
@@ -178,7 +185,7 @@ public class CabinetAllocatorTests
 
         var todaysBookings = new List<Booking>
         {
-            // A Turma 99 usou o Cabinet A na 1ª Aula (logo, ele se torna a preferência de continuidade)
+            // A Turma 99 usou o Cabinet A na 1ª Aula (logo, o carrinho já está fisicamente lá para a 2ª aula)
             new Booking(
                 date: _defaultDate,
                 classPeriodId: FIRST_CLASS_PERIOD,
@@ -186,7 +193,7 @@ public class CabinetAllocatorTests
                 teacherId: _defaultTeacherId,
                 sectionId: _defaultSectionId),
                 
-            // Outro professor foi mais rápido e reservou o Cabinet A na 2ª Aula para a Turma 50
+            // Outro professor foi mais rápido no sistema e reservou o Cabinet A na 2ª Aula para a Turma 50
             new Booking(
                 date: _defaultDate,
                 classPeriodId: SECOND_CLASS_PERIOD,
@@ -195,12 +202,23 @@ public class CabinetAllocatorTests
                 sectionId: _otherSectionId)
         };
 
-        // Act
-        var cabinet = _allocator.Allocate(SECOND_CLASS_PERIOD, _defaultSectionId, activeCabinets, todaysBookings);
+        // Act - A Turma 99 pede gabinete para a 2ª Aula (aula imediatamente seguinte)
+        var result = _allocator.Allocate(SECOND_CLASS_PERIOD, _defaultSectionId, activeCabinets, todaysBookings);
 
         // Assert
-        Assert.NotNull(cabinet);
-        Assert.Equal(2, cabinet.Id);
-        Assert.Equal("Cabinet B", cabinet.Name);
+        Assert.NotNull(result);
+        Assert.NotNull(result.AllocatedCabinet);
+
+        // O alocador deve devolver o Cabinet A para a Turma 99 (Roubo amigável para evitar mover carrinho à toa)
+        Assert.Equal(1, result.AllocatedCabinet.Id);
+        Assert.Equal("Cabinet A", result.AllocatedCabinet.Name);
+
+        // Deve sugerir o remanejamento da reserva do outro professor (Turma 50) para o Cabinet B
+        Assert.NotNull(result.BookingToSwap);
+        Assert.Equal(_otherSectionId, result.BookingToSwap.SectionId);
+
+        Assert.NotNull(result.ReplacementCabinet);
+        Assert.Equal(2, result.ReplacementCabinet.Id);
+        Assert.Equal("Cabinet B", result.ReplacementCabinet.Name);
     }
 }

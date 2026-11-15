@@ -16,6 +16,7 @@ public sealed record BookingResponse(
     int CabinetId,
     string CabinetName,
     int TeacherId,
+    string TeacherName,
     string TeacherEmail,
     int SectionId,
     string SectionName,
