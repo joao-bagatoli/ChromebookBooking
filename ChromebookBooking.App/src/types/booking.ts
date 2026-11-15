@@ -6,6 +6,7 @@ export interface Booking {
   cabinetId: number
   cabinetName: string
   teacherId: number
+  teacherName: string
   teacherEmail: string
   sectionId: number
   sectionName: string
