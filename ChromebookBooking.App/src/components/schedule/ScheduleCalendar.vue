@@ -1,88 +1,96 @@
 <script setup lang="ts">
-import { computed } from 'vue'
+  import { computed } from 'vue'
 
-interface Booking {
-  id: number
-  className: string
-  teacher: string
-  cabinetId: number
-  cabinetName: string
-  discipline?: string
-  isMine: boolean
-}
+  interface Booking {
+    id: number
+    className: string
+    teacher: string
+    cabinetId: number
+    cabinetName: string
+    discipline?: string
+    isMine: boolean
+  }
 
-interface Period {
-  id: number
-  label: string
-  time: string
-}
+  interface Period {
+    id: number
+    label: string
+    time: string
+  }
 
-interface Day {
-  key: string
-  label: string
-  date: Date
-  isPast: boolean
-  isToday: boolean
-}
+  interface Day {
+    key: string
+    label: string
+    date: Date
+    isPast: boolean
+    isToday: boolean
+  }
 
-interface SelectedSlot {
-  day: Day
-  period: Period
-}
+  interface SelectedSlot {
+    day: Day
+    period: Period
+  }
 
-const props = defineProps<{
-  weekDays: Day[]
-  periods: Period[]
-  selectedSlot: SelectedSlot | null
-  totalCabinets: number
-  getBookings: (day: Day, period: Period) => Booking[]
-  getAvailableCabinets: (day: Day, period: Period) => { id: number; name: string }[]
-  isLocked: (day: Day, period: Period) => boolean
-}>()
+  const props = defineProps<{
+    weekDays: Day[]
+    periods: Period[]
+    selectedSlot: SelectedSlot | null
+    totalCabinets: number
+    getBookings: (day: Day, period: Period) => Booking[]
+    getAvailableCabinets: (day: Day, period: Period) => { id: number; name: string }[]
+    isLocked: (day: Day, period: Period) => boolean
+  }>()
 
-const emit = defineEmits<{
-  moveWeek: [amount: number]
-  goToToday: []
-  selectSlot: [day: Day, period: Period]
-  openReservation: [day: Day, period: Period]
-  cancelBooking: [bookingId: number]
-}>()
+  const emit = defineEmits<{
+    moveWeek: [amount: number]
+    goToToday: []
+    selectSlot: [day: Day, period: Period]
+    openReservation: [day: Day, period: Period]
+    cancelBooking: [bookingId: number]
+  }>()
 
-const dayNumberFormatter = new Intl.DateTimeFormat('pt-BR', {
-  day: '2-digit',
-})
+  const dayNumberFormatter = new Intl.DateTimeFormat('pt-BR', {
+    day: '2-digit',
+  })
 
-function formatDayNumber(date: Date) {
-  return dayNumberFormatter.format(date)
-}
+  function formatDayNumber(date: Date) {
+    return dayNumberFormatter.format(date)
+  }
 
-function capitalize(value: string) {
-  return value.charAt(0).toUpperCase() + value.slice(1)
-}
+  function capitalize(value: string) {
+    return value.charAt(0).toUpperCase() + value.slice(1)
+  }
 
-function canReserve(day: Day, period: Period) {
-  return !props.isLocked(day, period) && props.getAvailableCabinets(day, period).length > 0
-}
+  function canReserve(day: Day, period: Period) {
+    const isLockedTime = props.isLocked(day, period)
+    const hasAvailableCabinets = props.getAvailableCabinets(day, period).length > 0
+    const iAmAlreadyBooked = props.getBookings(day, period).some(b => b.isMine)
 
-function reserveLabel(day: Day, period: Period) {
-  if (props.isLocked(day, period)) return 'Indisponível'
-  return props.getAvailableCabinets(day, period).length ? 'Reservar gabinete' : 'Sem gabinetes'
-}
+    return !isLockedTime && hasAvailableCabinets && !iAmAlreadyBooked
+  }
 
-const monthYearFormatter = new Intl.DateTimeFormat('pt-BR', {
-  month: 'long',
-  year: 'numeric'
-})
+  function reserveLabel(day: Day, period: Period) {
+    if (props.isLocked(day, period)) return 'Indisponível'
 
-const currentMonthYear = computed(() => {
-  if (!props.weekDays || props.weekDays.length === 0) return ''
+    const iAmAlreadyBooked = props.getBookings(day, period).some(b => b.isMine)
+    if (iAmAlreadyBooked) return 'Você já reservou este horário'
 
-  const firstDayOfWeek = props.weekDays[0]?.date ?? null
-  if (!firstDayOfWeek) return ''
-  const formatted = monthYearFormatter.format(firstDayOfWeek)
-  
-  return formatted.charAt(0).toUpperCase() + formatted.slice(1)
-})
+    return props.getAvailableCabinets(day, period).length ? 'Reservar gabinete' : 'Sem gabinetes'
+  }
+
+  const monthYearFormatter = new Intl.DateTimeFormat('pt-BR', {
+    month: 'long',
+    year: 'numeric'
+  })
+
+  const currentMonthYear = computed(() => {
+    if (!props.weekDays || props.weekDays.length === 0) return ''
+
+    const firstDayOfWeek = props.weekDays[0]?.date ?? null
+    if (!firstDayOfWeek) return ''
+    const formatted = monthYearFormatter.format(firstDayOfWeek)
+
+    return formatted.charAt(0).toUpperCase() + formatted.slice(1)
+  })
 </script>
 
 <template>
