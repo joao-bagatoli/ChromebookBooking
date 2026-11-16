@@ -17,7 +17,7 @@ export default class BookingService {
 
   async getWeeklyBookings(startDate: string, endDate: string): Promise<Booking[]> {
     return await this.httpClient.get(
-      `${this.baseUrl}/bookings?startDate=${startDate}&endDate=${endDate}`,
+      `${this.baseUrl}/bookings/weekly?startDate=${startDate}&endDate=${endDate}`,
     )
   }
 

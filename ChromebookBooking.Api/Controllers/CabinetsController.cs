@@ -49,22 +49,6 @@ public sealed class CabinetsController : ControllerBase
         return NoContent();
     }
 
-    //[HttpPatch("{id}/activate")]
-    //[Authorize(Roles = nameof(UserRole.Admin))]
-    //public async Task<IActionResult> ActivateCabinet(int id)
-    //{
-    //    await _service.ActivateCabinetAsync(id);
-    //    return NoContent();
-    //}
-
-    //[HttpPatch("{id}/deactivate")]
-    //[Authorize(Roles = nameof(UserRole.Admin))]
-    //public async Task<IActionResult> DeactivateCabinet(int id)
-    //{
-    //    await _service.DeactivateCabinetAsync(id);
-    //    return NoContent();
-    //}
-
     [HttpDelete("{id}")]
     [Authorize(Roles = nameof(UserRole.Admin))]
     public async Task<IActionResult> DeleteCabinet(int id)
