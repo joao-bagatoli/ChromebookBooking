@@ -18,7 +18,7 @@ public sealed class SectionsController : ControllerBase
     }
 
     [HttpGet]
-    [Authorize(Roles = nameof(UserRole.Admin))]
+    [Authorize]
     public async Task<IActionResult> GetAllSections()
     {
         var sections = await _service.GetAllSectionsAsync();
