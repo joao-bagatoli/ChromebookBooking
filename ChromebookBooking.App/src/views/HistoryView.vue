@@ -64,13 +64,6 @@
           </div>
         </template>
 
-        <template #loading>
-          <div class="loading-state">
-            <i class="pi pi-spin pi-spinner loading-icon" />
-            <p>Carregando dados das reservas...</p>
-          </div>
-        </template>
-
         <Column field="date" header="Data" sortable style="min-width: 120px;">
           <template #body="{ data }">
             {{ formatDate(data.date) }}
@@ -136,15 +129,13 @@
     width: 300px;
   }
 
-  .empty-state,
-  .loading-state {
+  .empty-state {
     text-align: center;
     padding: 3rem 1rem;
     color: var(--surface-500, #64748b);
   }
 
-  .empty-icon,
-  .loading-icon {
+  .empty-icon {
     font-size: 2rem;
     margin-bottom: 0.5rem;
     display: block;
