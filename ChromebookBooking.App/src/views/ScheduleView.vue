@@ -2,6 +2,7 @@
   import { inject, computed, onMounted, ref, watch } from 'vue'
   import { useAuthStore } from '../stores/auth'
   import { useBookingStore } from '../stores/booking'
+  import { useToast } from 'primevue/usetoast'
   import ServiceFactory from '../services/ServiceFactory'
   import type { Section } from '../types/section'
   import ScheduleCalendar from '../components/schedule/ScheduleCalendar.vue'
@@ -23,12 +24,12 @@
 
   // Mesma regra do backend (BookingService.MINIMUM_HOURS)
   const MINIMUM_HOURS = 48
-
   // Ideal: vir do backend (ex.: CabinetService)
   const TOTAL_CABINETS = 5
 
   const authStore = useAuthStore()
   const bookingStore = useBookingStore()
+  const toast = useToast()
   const serviceFactory = inject('serviceFactory') as ServiceFactory
   const sectionService = serviceFactory.createSectionService()
   const classPeriodService = serviceFactory.createClassPeriodService()
@@ -251,10 +252,29 @@
   async function cancel(bookingId: number) {
     if (!window.confirm('Cancelar esta reserva?')) return
 
+    toast.add({
+      severity: 'info',
+      summary: 'Cancelando',
+      detail: 'Cancelando a sua reserva, aguarde...',
+      life: 3000
+    })
+
     try {
       await bookingStore.cancel(bookingId)
+
+      toast.add({
+        severity: 'success',
+        summary: 'Sucesso!',
+        detail: 'Reserva cancelada com sucesso.',
+        life: 3000
+      })
     } catch {
-      // A mensagem fica em bookingStore.error e aparece na página
+      toast.add({
+        severity: 'error',
+        summary: 'Erro',
+        detail: 'Não foi possível cancelar a reserva.',
+        life: 4000
+      })
     }
   }
 </script>
