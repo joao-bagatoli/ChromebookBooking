@@ -77,7 +77,7 @@
 
 <template>
   <div>
-    <DataTable :value="filteredUsers" :loading="loading">
+    <DataTable :value="filteredUsers" :loading="loading" scrollable scrollHeight="calc(100vh - 220px)">
       <Column field="name" header="Nome"></Column>
 
       <Column field="email" header="E-mail"></Column>

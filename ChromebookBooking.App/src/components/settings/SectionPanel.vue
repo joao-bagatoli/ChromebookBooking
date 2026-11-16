@@ -87,7 +87,7 @@
 
 <template>
   <div>
-    <DataTable :value="filteredSections" :loading="loading">
+    <DataTable :value="filteredSections" :loading="loading" scrollable scrollHeight="calc(100vh - 220px)">
 
       <template #empty>
         Nenhuma turma encontrada.
