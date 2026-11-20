@@ -4,7 +4,14 @@ namespace ChromebookBooking.Api.Interfaces;
 
 public interface IBookingService
 {
-    Task BookAsync(DateOnly date, int classPeriodId, int teacherId, int sectionId, bool isPartial, int? chromebooksQuantity);
+    Task BookAsync(
+        DateOnly date,
+        int classPeriodId,
+        int teacherId,
+        int sectionId,
+        bool isPartial,
+        int? chromebooksQuantity,
+        string? discipline = null);
     Task CancelBookingAsync(int bookingId, Guid authUserId);
     Task<IReadOnlyList<BookingResponse>> GetWeeklyBookingsAsync(DateOnly startDate, DateOnly endDate);
     Task<IReadOnlyList<BookingResponse>> GetBookingsAsync();

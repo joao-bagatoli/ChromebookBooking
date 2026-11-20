@@ -45,6 +45,10 @@ namespace ChromebookBooking.Api.Migrations
                     b.Property<DateOnly>("Date")
                         .HasColumnType("date");
 
+                    b.Property<string>("Discipline")
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
+
                     b.Property<bool>("IsCancelled")
                         .HasColumnType("boolean");
 

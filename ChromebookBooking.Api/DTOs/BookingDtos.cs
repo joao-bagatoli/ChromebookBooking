@@ -1,12 +1,13 @@
 ﻿namespace ChromebookBooking.Api.DTOs;
 
 public sealed record BookRequest(
-    DateOnly Date, 
-    int ClassPeriodId, 
-    int TeacherId, 
-    int SectionId, 
-    bool IsPartial, 
-    int? ChromebooksQuantity);
+    DateOnly Date,
+    int ClassPeriodId,
+    int TeacherId,
+    int SectionId,
+    bool IsPartial,
+    int? ChromebooksQuantity,
+    string? Discipline = null);
 
 public sealed record BookingResponse(
     int Id,
@@ -21,7 +22,8 @@ public sealed record BookingResponse(
     int SectionId,
     string SectionName,
     bool IsPartial,
-    int? ChromebooksQuantity);
+    int? ChromebooksQuantity,
+    string? Discipline);
 
 public sealed record DailyBooking(
     int Id,

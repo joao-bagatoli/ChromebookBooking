@@ -6,6 +6,8 @@ namespace ChromebookBooking.Api.Domain.Entities;
 
 public sealed class Booking
 {
+    public const int DisciplineMaxLength = 100;
+
     [Key]
     [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
     public int Id { get; private set; }
@@ -29,6 +31,10 @@ public sealed class Booking
     public int SectionId { get; private set; }
     public Section? Section { get; private set; }
 
+    // Disciplina em que o gabinete será usado (opcional)
+    [MaxLength(DisciplineMaxLength)]
+    public string? Discipline { get; private set; }
+
     [Required]
     public bool IsPartial { get; private set; }
 
@@ -44,13 +50,14 @@ public sealed class Booking
     private Booking() { }
 
     public Booking(
-        DateOnly date, 
-        int classPeriodId, 
-        int cabinetId, 
-        int teacherId, 
-        int sectionId, 
-        bool isPartial = false, 
-        int? chromebooksQuantity = null)
+        DateOnly date,
+        int classPeriodId,
+        int cabinetId,
+        int teacherId,
+        int sectionId,
+        bool isPartial = false,
+        int? chromebooksQuantity = null,
+        string? discipline = null)
     {
         if (isPartial && (chromebooksQuantity is null || chromebooksQuantity <= 0))
         {
@@ -67,6 +74,7 @@ public sealed class Booking
         CabinetId = cabinetId;
         TeacherId = teacherId;
         SectionId = sectionId;
+        Discipline = NormalizeDiscipline(discipline);
         IsPartial = isPartial;
         ChromebooksQuantity = chromebooksQuantity;
         IsCancelled = false;
@@ -86,5 +94,23 @@ public sealed class Booking
     public void Cancel()
     {
         IsCancelled = true;
+    }
+
+    // Texto vazio vira null; espaços nas pontas são removidos
+    private static string? NormalizeDiscipline(string? discipline)
+    {
+        if (string.IsNullOrWhiteSpace(discipline))
+        {
+            return null;
+        }
+
+        var trimmed = discipline.Trim();
+
+        if (trimmed.Length > DisciplineMaxLength)
+        {
+            throw new DomainException($"A disciplina deve ter no máximo {DisciplineMaxLength} caracteres.");
+        }
+
+        return trimmed;
     }
 }
