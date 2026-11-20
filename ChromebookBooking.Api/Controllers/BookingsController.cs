@@ -47,12 +47,13 @@ public sealed class BookingsController : ControllerBase
     public async Task<IActionResult> BookChromebooks(BookRequest request)
     {
         await _service.BookAsync(
-            request.Date, 
-            request.ClassPeriodId, 
-            request.TeacherId, 
-            request.SectionId, 
-            request.IsPartial, 
-            request.ChromebooksQuantity);
+            request.Date,
+            request.ClassPeriodId,
+            request.TeacherId,
+            request.SectionId,
+            request.IsPartial,
+            request.ChromebooksQuantity,
+            request.Discipline);
         return Ok();
     }
 
