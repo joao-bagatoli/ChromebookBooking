@@ -12,6 +12,7 @@
     id: number
     label: string
     time: string
+    shift: number
   }
 
   interface Day {
@@ -136,10 +137,13 @@
 
       sections.value = loadedSections
 
+      // console.log('classPeriods', classPeriods);
+
       periods.value = classPeriods.map(classPeriod => ({
         id: classPeriod.id,
         label: classPeriod.name,
         time: `${formatTime(classPeriod.startTime)}–${formatTime(classPeriod.endTime)}`,
+        shift: classPeriod.shift,
       }))
     } catch (e) {
       loadError.value =
