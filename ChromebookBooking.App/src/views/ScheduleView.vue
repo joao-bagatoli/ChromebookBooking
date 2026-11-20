@@ -12,7 +12,7 @@
     id: number
     label: string
     time: string
-    shift: number
+    shift: string
   }
 
   interface Day {
@@ -137,7 +137,7 @@
 
       sections.value = loadedSections
 
-      // console.log('classPeriods', classPeriods);
+      console.log('classPeriods', classPeriods);
 
       periods.value = classPeriods.map(classPeriod => ({
         id: classPeriod.id,
