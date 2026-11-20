@@ -21,6 +21,7 @@ export interface CreateBookingPayload {
   sectionId: number
   isPartial: boolean
   chromebooksQuantity: number | null
+  subject: string | null
 }
 
 // alias para manter compatibilidade com o código antigo

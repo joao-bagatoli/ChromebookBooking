@@ -52,7 +52,8 @@ public sealed class BookingsController : ControllerBase
             request.TeacherId, 
             request.SectionId, 
             request.IsPartial, 
-            request.ChromebooksQuantity);
+            request.ChromebooksQuantity,
+            request.Subject);
         return Ok();
     }
 

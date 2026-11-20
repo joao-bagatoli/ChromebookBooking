@@ -241,6 +241,7 @@
         sectionId: form.sectionId,
         isPartial: false,
         chromebooksQuantity: null,
+        subject: form.discipline || null,
       })
 
       reservationDialog.value = null
