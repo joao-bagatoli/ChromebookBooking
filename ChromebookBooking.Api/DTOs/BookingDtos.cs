@@ -6,7 +6,9 @@ public sealed record BookRequest(
     int TeacherId, 
     int SectionId, 
     bool IsPartial, 
-    int? ChromebooksQuantity);
+    int? ChromebooksQuantity,
+    string? Subject
+);
 
 public sealed record BookingResponse(
     int Id,
@@ -21,7 +23,9 @@ public sealed record BookingResponse(
     int SectionId,
     string SectionName,
     bool IsPartial,
-    int? ChromebooksQuantity);
+    int? ChromebooksQuantity,
+    string? Subject
+);
 
 public sealed record DailyBooking(
     int Id,

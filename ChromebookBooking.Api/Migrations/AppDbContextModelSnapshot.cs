@@ -54,6 +54,9 @@ namespace ChromebookBooking.Api.Migrations
                     b.Property<int>("SectionId")
                         .HasColumnType("integer");
 
+                    b.Property<string>("Subject")
+                        .HasColumnType("text");
+
                     b.Property<int>("TeacherId")
                         .HasColumnType("integer");
 

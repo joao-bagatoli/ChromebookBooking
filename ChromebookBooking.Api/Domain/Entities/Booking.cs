@@ -35,6 +35,9 @@ public sealed class Booking
     // ALTER TABLE
     public int? ChromebooksQuantity { get; private set; }
 
+    // ALTER TABLE
+    public string? Subject { get; private set; }
+
     [Required]
     public bool IsCancelled { get; private set; }
 
@@ -50,7 +53,8 @@ public sealed class Booking
         int teacherId, 
         int sectionId, 
         bool isPartial = false, 
-        int? chromebooksQuantity = null)
+        int? chromebooksQuantity = null, 
+        string? subject = null)
     {
         if (isPartial && (chromebooksQuantity is null || chromebooksQuantity <= 0))
         {
@@ -69,6 +73,7 @@ public sealed class Booking
         SectionId = sectionId;
         IsPartial = isPartial;
         ChromebooksQuantity = chromebooksQuantity;
+        Subject = subject;
         IsCancelled = false;
         CreatedAt = DateTime.UtcNow;
     }
