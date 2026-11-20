@@ -1,7 +1,7 @@
 export interface ClassPeriod {
   id: number
   name: string
-  shift: number
+  shift: string
   startTime: string 
   endTime: string
 }
