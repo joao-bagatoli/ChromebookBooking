@@ -76,7 +76,7 @@
 
         <Column field="teacherName" header="Professor" sortable style="min-width: 180px;" />
 
-        <Column field="subject" header="Matéria" sortable style="min-width: 180px;" />
+        <Column field="subject" header="Disciplina" sortable style="min-width: 180px;" />
 
         <Column field="cabinetName" header="Gabinete" sortable style="min-width: 180px;" />
 
