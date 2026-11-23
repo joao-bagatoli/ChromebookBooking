@@ -6,6 +6,8 @@ namespace ChromebookBooking.Api.Domain.Entities;
 
 public sealed class Booking
 {
+    public const int SubjectMaxLength = 100;
+
     [Key]
     [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
     public int Id { get; private set; }
@@ -35,6 +37,9 @@ public sealed class Booking
     // ALTER TABLE
     public int? ChromebooksQuantity { get; private set; }
 
+    // ALTER TABLE
+    public string? Subject { get; private set; }
+
     [Required]
     public bool IsCancelled { get; private set; }
 
@@ -50,7 +55,8 @@ public sealed class Booking
         int teacherId, 
         int sectionId, 
         bool isPartial = false, 
-        int? chromebooksQuantity = null)
+        int? chromebooksQuantity = null, 
+        string? subject = null)
     {
         if (isPartial && (chromebooksQuantity is null || chromebooksQuantity <= 0))
         {
@@ -69,6 +75,7 @@ public sealed class Booking
         SectionId = sectionId;
         IsPartial = isPartial;
         ChromebooksQuantity = chromebooksQuantity;
+        Subject = NormalizeSubject(subject);
         IsCancelled = false;
         CreatedAt = DateTime.UtcNow;
     }
@@ -86,5 +93,23 @@ public sealed class Booking
     public void Cancel()
     {
         IsCancelled = true;
+    }
+
+    // Texto vazio vira null; espaços nas pontas são removidos
+    private static string? NormalizeSubject(string? subject)
+    {
+        if (string.IsNullOrWhiteSpace(subject))
+        {
+            return null;
+        }
+
+        var trimmed = subject.Trim();
+
+        if (trimmed.Length > SubjectMaxLength)
+        {
+            throw new DomainException($"A disciplina deve ter no máximo {SubjectMaxLength} caracteres.");
+        }
+
+        return trimmed;
     }
 }

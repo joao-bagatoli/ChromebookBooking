@@ -12,6 +12,7 @@ export interface Booking {
   sectionName: string
   isPartial: boolean
   chromebooksQuantity: number | null
+  subject: string | null
 }
 
 export interface CreateBookingPayload {
@@ -21,6 +22,7 @@ export interface CreateBookingPayload {
   sectionId: number
   isPartial: boolean
   chromebooksQuantity: number | null
+  subject: string | null
 }
 
 // alias para manter compatibilidade com o código antigo

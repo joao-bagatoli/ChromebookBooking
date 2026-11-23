@@ -1,5 +1,6 @@
 <script setup lang="ts">
-  import { computed } from 'vue'
+  import { computed, ref } from 'vue'
+  import SelectButton from 'primevue/selectbutton'
 
   interface Booking {
     id: number
@@ -8,6 +9,8 @@
     cabinetId: number
     cabinetName: string
     discipline?: string
+    isPartial: boolean
+    chromebooksQuantity?: number | null
     isMine: boolean
   }
 
@@ -15,6 +18,7 @@
     id: number
     label: string
     time: string
+    shift: string
   }
 
   interface Day {
@@ -48,6 +52,33 @@
     cancelBooking: [bookingId: number]
   }>()
 
+  // Paleta de matizes (hue) usada para diferenciar os professores
+  const TEACHER_HUES = [211, 145, 28, 275, 345, 175, 48, 320, 100, 0, 235, 195]
+
+  // Gera um número estável a partir de um texto (mesmo professor = mesmo número)
+  function hashString(value: string) {
+    let hash = 0
+
+    for (let index = 0; index < value.length; index++) {
+      hash = (hash * 31 + value.charCodeAt(index)) >>> 0
+    }
+
+    return hash
+  }
+
+  // Devolve as cores do chip como variáveis CSS, sempre iguais para o mesmo professor
+  function getChipStyle(teacher: string) {
+    const key = teacher.trim().toLowerCase()
+    const hue = TEACHER_HUES[hashString(key) % TEACHER_HUES.length]!
+
+    return {
+      '--chip-bg': `hsl(${hue} 80% 93%)`,
+      '--chip-border': `hsl(${hue} 60% 70%)`,
+      '--chip-text': `hsl(${hue} 55% 30%)`,
+      '--chip-muted': `hsl(${hue} 35% 45%)`,
+    }
+  }
+
   const dayNumberFormatter = new Intl.DateTimeFormat('pt-BR', {
     day: '2-digit',
   })
@@ -58,6 +89,12 @@
 
   function capitalize(value: string) {
     return value.charAt(0).toUpperCase() + value.slice(1)
+  }
+
+  // Texto exibido no chip apenas para reservas parciais
+  function reservationTypeLabel(booking: Booking) {
+    const quantity = booking.chromebooksQuantity
+    return quantity ? `Parcial (${quantity})` : 'Parcial'
   }
 
   function canReserve(day: Day, period: Period) {
@@ -91,6 +128,17 @@
 
     return formatted.charAt(0).toUpperCase() + formatted.slice(1)
   })
+
+  const selectedShift = ref<string>('Morning')
+
+  const shiftOptions = [
+    { label: 'Matutino', value: 'Morning' },
+    { label: 'Vespertino', value: 'Afternoon' },
+  ]
+
+  const filteredPeriods = computed(() => {
+    return props.periods.filter(period => period.shift === selectedShift.value)
+  })
 </script>
 
 <template>
@@ -100,26 +148,36 @@
 
       <h2 class="current-month-year">{{ currentMonthYear }}</h2>
 
-      <div class="nav-buttons">
-        <button class="calendar-button icon-button"
-                type="button"
-                aria-label="Semana anterior"
-                @click="emit('moveWeek', -1)">
-          <i class="pi pi-angle-left"></i>
-        </button>
+      <div class="nav-actions">
+        <SelectButton v-model="selectedShift"
+                      :options="shiftOptions"
+                      optionLabel="label"
+                      optionValue="value"
+                      :allowEmpty="false"
+                      size="small"
+                      aria-label="Selecionar turno" />
 
-        <button class="calendar-button today-button"
-                type="button"
-                @click="emit('goToToday')">
-          Hoje
-        </button>
+        <div class="nav-buttons">
+          <button class="calendar-button icon-button"
+                  type="button"
+                  aria-label="Semana anterior"
+                  @click="emit('moveWeek', -1)">
+            <i class="pi pi-angle-left"></i>
+          </button>
 
-        <button class="calendar-button icon-button"
-                type="button"
-                aria-label="Próxima semana"
-                @click="emit('moveWeek', 1)">
-          <i class="pi pi-angle-right"></i>
-        </button>
+          <button class="calendar-button today-button"
+                  type="button"
+                  @click="emit('goToToday')">
+            Hoje
+          </button>
+
+          <button class="calendar-button icon-button"
+                  type="button"
+                  aria-label="Próxima semana"
+                  @click="emit('moveWeek', 1)">
+            <i class="pi pi-angle-right"></i>
+          </button>
+        </div>
       </div>
 
     </div>
@@ -155,7 +213,7 @@
 
       </div>
 
-      <div v-for="period in props.periods"
+      <div v-for="period in filteredPeriods"
            :key="period.id"
            class="calendar-grid calendar-row">
 
@@ -195,7 +253,8 @@
 
             <span v-for="booking in props.getBookings(day, period)"
                   :key="booking.id"
-                  class="booking-chip">
+                  class="booking-chip"
+                  :style="getChipStyle(booking.teacher)">
 
               <span>
                 {{ booking.className }}
@@ -204,11 +263,15 @@
               </span>
 
               <small>
-                {{ booking.cabinetName }}
+                Gabinete: {{ booking.cabinetName }}
               </small>
 
               <small v-if="booking.discipline">
-                {{ booking.discipline }}
+                Disciplina: {{ booking.discipline }}
+              </small>
+
+              <small v-if="booking.isPartial">
+                Reserva: {{ reservationTypeLabel(booking) }}
               </small>
 
               <button v-if="booking.isMine && !day.isPast"
@@ -280,6 +343,13 @@
     font-size: 1.15rem;
     font-weight: 600;
     color: var(--p-surface-800);
+  }
+
+  .nav-actions {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 0.75rem;
   }
 
   .nav-buttons {
@@ -498,14 +568,16 @@
     min-width: 0;
   }
 
+  /* As variáveis --chip-* vêm do :style (uma cor por professor) */
   .booking-chip {
     display: flex;
     flex-direction: column;
     overflow: hidden;
     padding: 0.35rem 0.45rem;
+    border-left: 3px solid var(--chip-border, #8db4e7);
     border-radius: 0.25rem;
-    color: #3573c2;
-    background: #e6effd;
+    color: var(--chip-text, #3573c2);
+    background: var(--chip-bg, #e6effd);
     font-size: 0.68rem;
     font-weight: 600;
     line-height: 1.3;
@@ -514,9 +586,11 @@
   }
 
     .booking-chip small {
-      color: #6c9bd1;
+      overflow: hidden;
+      color: var(--chip-muted, #6c9bd1);
       font-size: 0.58rem;
       font-weight: 500;
+      text-overflow: ellipsis;
     }
 
   .booking-list > small {

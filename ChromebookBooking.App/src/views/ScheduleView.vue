@@ -12,6 +12,7 @@
     id: number
     label: string
     time: string
+    shift: string
   }
 
   interface Day {
@@ -22,9 +23,8 @@
     isToday: boolean
   }
 
-  // Mesma regra do backend (BookingService.MINIMUM_HOURS)
-  const MINIMUM_HOURS = 48
-  // Ideal: vir do backend (ex.: CabinetService)
+
+  const MINIMUM_DAYS = 2
   const TOTAL_CABINETS = 5
 
   const authStore = useAuthStore()
@@ -116,7 +116,6 @@
     return result
   })
 
-  // Busca as reservas sempre que a semana exibida mudar
   watch(
     () => weekDays.value[0]!.key,
     () => {
@@ -126,7 +125,6 @@
     { immediate: true },
   )
 
-  // Carrega turmas e aulas (ClassPeriods) do backend
   onMounted(async () => {
     try {
       const [loadedSections, classPeriods] = await Promise.all([
@@ -136,10 +134,13 @@
 
       sections.value = loadedSections
 
+      console.log('classPeriods', classPeriods);
+
       periods.value = classPeriods.map(classPeriod => ({
         id: classPeriod.id,
         label: classPeriod.name,
         time: `${formatTime(classPeriod.startTime)}–${formatTime(classPeriod.endTime)}`,
+        shift: classPeriod.shift,
       }))
     } catch (e) {
       loadError.value =
@@ -147,19 +148,14 @@
     }
   })
 
-  // true quando faltam menos de MINIMUM_HOURS para o início da aula
-  function isTooSoon(day: Day, period: Period) {
-    const start = period.time.split('–')[0] ?? '00:00'
-    const [hours, minutes] = start.split(':').map(Number)
-    const classStart = new Date(day.date)
-    classStart.setHours(hours ?? 0, minutes ?? 0, 0, 0)
-    const hoursUntilClass = (classStart.getTime() - Date.now()) / 36e5
-    return hoursUntilClass < MINIMUM_HOURS
+
+  function isTooSoon(day: Day) {
+    const earliestDate = addDays(normalizeDate(new Date()), MINIMUM_DAYS)
+    return isDateBefore(day.date, earliestDate)
   }
 
-  // Slot indisponível para novas reservas (dia passado ou fora da antecedência)
-  function isLocked(day: Day, period: Period) {
-    return day.isPast || isTooSoon(day, period)
+  function isLocked(day: Day) {
+    return day.isPast || isTooSoon(day)
   }
 
   function getBookings(day: Day, period: Period) {
@@ -169,6 +165,9 @@
       teacher: booking.teacherName ?? booking.teacherEmail,
       cabinetId: booking.cabinetId,
       cabinetName: booking.cabinetName,
+      discipline: booking.subject ?? undefined,
+      isPartial: booking.isPartial,
+      chromebooksQuantity: booking.chromebooksQuantity ?? null,
       isMine: booking.teacherEmail.toLowerCase() === loggedEmail.value,
     }))
   }
@@ -208,7 +207,7 @@
   }
 
   function openReservation(day: Day, period: Period) {
-    if (isLocked(day, period)) return
+    if (isLocked(day)) return
     if (getAvailableCabinets(day, period).length === 0) return
 
     selectedSlot.value = { day, period }
@@ -221,13 +220,32 @@
     bookingStore.clearError()
   }
 
-  async function confirmReservation(form: { sectionId: number; discipline: string }) {
+  async function confirmReservation(form: {
+    sectionId: number
+    discipline: string
+    isPartial: boolean
+    chromebooksQuantity: number | null
+  }) {
     if (!reservationDialog.value) return
 
-    // id do usuário na API (LoggedUserResponse.Id), carregado em authStore.profile
     const teacherId = authStore.profile?.id
     if (!teacherId) {
-      bookingStore.error = 'Usuário não identificado. Faça login novamente.'
+      toast.add({
+        severity: 'error',
+        summary: 'Erro',
+        detail: 'Usuário não identificado. Faça login novamente.',
+        life: 4000
+      })
+      return
+    }
+
+    if (form.isPartial && (!form.chromebooksQuantity || form.chromebooksQuantity <= 0)) {
+      toast.add({
+        severity: 'warn',
+        summary: 'Atenção',
+        detail: 'Informe a quantidade de chromebooks para a reserva parcial.',
+        life: 4000
+      })
       return
     }
 
@@ -239,13 +257,27 @@
         classPeriodId: period.id,
         teacherId,
         sectionId: form.sectionId,
-        isPartial: false,
-        chromebooksQuantity: null,
+        isPartial: form.isPartial,
+        chromebooksQuantity: form.isPartial ? form.chromebooksQuantity : null,
+        subject: form.discipline.trim() || null,
       })
 
       reservationDialog.value = null
+
+      toast.add({
+        severity: 'success',
+        summary: 'Sucesso!',
+        detail: 'Reserva realizada com sucesso.',
+        life: 3000
+      })
     } catch {
-      // A mensagem fica em bookingStore.error e aparece no modal
+      // O modal de reserva continua aberto para o professor tentar de novo
+      toast.add({
+        severity: 'error',
+        summary: 'Erro',
+        detail: bookingStore.error ?? 'Não foi possível realizar a reserva.',
+        life: 4000
+      })
     }
   }
 
@@ -312,11 +344,7 @@
       {{ loadError }}
     </p>
 
-    <p v-if="bookingStore.error && !reservationDialog"
-       class="page-error">
-      {{ bookingStore.error }}
-    </p>
-
+    <!-- O erro da reserva agora aparece no toast, por isso :error="null" -->
     <ScheduleCard v-if="reservationDialog"
                   :reservation-dialog="reservationDialog"
                   :sections="sections"
@@ -326,7 +354,7 @@
                     reservationDialog.period,
                   )"
                   :saving="bookingStore.saving"
-                  :error="bookingStore.error"
+                  :error="null"
                   @close="closeReservation"
                   @confirm="confirmReservation" />
 
