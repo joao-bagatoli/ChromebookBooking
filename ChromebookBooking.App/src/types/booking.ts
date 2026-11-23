@@ -12,6 +12,7 @@ export interface Booking {
   sectionName: string
   isPartial: boolean
   chromebooksQuantity: number | null
+  subject: string | null
 }
 
 export interface CreateBookingPayload {

@@ -1,70 +1,99 @@
 <script setup lang="ts">
-import { reactive } from 'vue'
+  import { reactive, watch, computed } from 'vue'
 
-interface Period {
-  id: number
-  label: string
-  time: string
-}
+  interface Period {
+    id: number
+    label: string
+    time: string
+  }
 
-interface Day {
-  key: string
-  label: string
-  date: Date
-  isPast: boolean
-  isToday: boolean
-}
+  interface Day {
+    key: string
+    label: string
+    date: Date
+    isPast: boolean
+    isToday: boolean
+  }
 
-interface Section {
-  id: number
-  name: string
-}
-
-interface ReservationDialog {
-  day: Day
-  period: Period
-}
-
-const props = defineProps<{
-  reservationDialog: ReservationDialog
-  sections: Section[]
-  loggedTeacherName: string
-  availableCabinets: {
+  interface Section {
     id: number
     name: string
-  }[]
-  saving: boolean
-  error: string | null
-}>()
+  }
 
-const emit = defineEmits<{
-  close: []
-  confirm: [form: { sectionId: number; discipline: string }]
-}>()
+  interface ReservationDialog {
+    day: Day
+    period: Period
+  }
 
-// Estado do formulário fica dentro do modal (não altera props)
-const form = reactive({
-  sectionId: null as number | null,
-  discipline: '',
-})
+  const props = defineProps<{
+    reservationDialog: ReservationDialog
+    sections: Section[]
+    loggedTeacherName: string
+    availableCabinets: {
+      id: number
+      name: string
+    }[]
+    saving: boolean
+    error: string | null
+  }>()
 
-const dateFormatter = new Intl.DateTimeFormat('pt-BR', {
-  day: '2-digit',
-  month: '2-digit',
-  year: 'numeric',
-})
+  const emit = defineEmits<{
+    close: []
+    confirm: [form: {
+      sectionId: number
+      discipline: string
+      isPartial: boolean
+      chromebooksQuantity: number | null
+    }]
+  }>()
 
-function formatDate(date: Date) {
-  return dateFormatter.format(date)
-}
-
-function submit() {
-  if (!form.sectionId) return
-  emit('confirm', {
-    sectionId: form.sectionId,
-    discipline: form.discipline,
+  // Estado do formulário fica dentro do modal (não altera props)
+  const form = reactive({
+    sectionId: null as number | null,
+    discipline: '',
+    isPartial: false,
+    chromebooksQuantity: null as number | null,
   })
-}
+
+  // Ao desligar a reserva parcial, limpa a quantidade
+  watch(() => form.isPartial, (isPartial) => {
+    if (!isPartial) form.chromebooksQuantity = null
+  })
+
+  // Quando é parcial, a quantidade precisa ser um inteiro maior que zero
+  const quantityIsValid = computed(() => {
+    if (!form.isPartial) return true
+    const qty = form.chromebooksQuantity
+    return qty !== null && Number.isInteger(qty) && qty > 0
+  })
+
+  const canSubmit = computed(() =>
+    !!form.sectionId &&
+    quantityIsValid.value &&
+    props.availableCabinets.length > 0 &&
+    !props.saving,
+  )
+
+  const dateFormatter = new Intl.DateTimeFormat('pt-BR', {
+    day: '2-digit',
+    month: '2-digit',
+    year: 'numeric',
+  })
+
+  function formatDate(date: Date) {
+    return dateFormatter.format(date)
+  }
+
+  function submit() {
+    if (!canSubmit.value) return
+
+    emit('confirm', {
+      sectionId: form.sectionId!,
+      discipline: form.discipline,
+      isPartial: form.isPartial,
+      chromebooksQuantity: form.isPartial ? form.chromebooksQuantity : null,
+    })
+  }
 </script>
 
 <template>
@@ -193,6 +222,51 @@ function submit() {
 
       </div>
 
+      <div class="form-field">
+
+        <label class="switch-row"
+               for="reservation-partial">
+
+          <span class="switch-text">
+            Reserva parcial
+            <small>
+              Reservar apenas parte dos chromebooks do gabinete
+            </small>
+          </span>
+
+          <input id="reservation-partial"
+                 v-model="form.isPartial"
+                 class="switch-input"
+                 type="checkbox"
+                 role="switch"
+                 :disabled="props.saving" />
+
+        </label>
+
+      </div>
+
+      <div v-if="form.isPartial"
+           class="form-field">
+
+        <label for="reservation-quantity">
+          Quantidade de chromebooks
+        </label>
+
+        <input id="reservation-quantity"
+               v-model.number="form.chromebooksQuantity"
+               type="number"
+               min="1"
+               step="1"
+               placeholder="Ex: 15"
+               :disabled="props.saving" />
+
+        <small v-if="form.chromebooksQuantity !== null && !quantityIsValid"
+               class="field-error">
+          Informe uma quantidade maior que zero.
+        </small>
+
+      </div>
+
       <div class="assignment-info">
 
         <i class="pi pi-sparkles"></i>
@@ -231,9 +305,7 @@ function submit() {
 
         <button class="primary-modal-button"
                 type="button"
-                :disabled="!form.sectionId ||
-                  props.availableCabinets.length === 0 ||
-                  props.saving"
+                :disabled="!canSubmit"
                 @click="submit">
           {{ props.saving ? 'Reservando...' : 'Confirmar Reserva' }}
         </button>
@@ -379,6 +451,73 @@ function submit() {
         background: var(--p-surface-50);
         cursor: not-allowed;
       }
+
+  /* Switch de reserva parcial */
+  .switch-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    cursor: pointer;
+  }
+
+  .form-field .switch-text {
+    display: flex;
+    flex-direction: column;
+    gap: 0.15rem;
+    color: var(--p-surface-700);
+    font-weight: 600;
+  }
+
+    .form-field .switch-text small {
+      color: var(--p-surface-500);
+      font-size: 0.63rem;
+      font-weight: 400;
+    }
+
+  .form-field .switch-input {
+    appearance: none;
+    flex-shrink: 0;
+    position: relative;
+    width: 2.2rem;
+    height: 1.25rem;
+    padding: 0;
+    border: 0;
+    border-radius: 999px;
+    background: var(--p-surface-300);
+    cursor: pointer;
+    transition: background-color 0.15s ease;
+  }
+
+    .form-field .switch-input::after {
+      content: '';
+      position: absolute;
+      top: 0.15rem;
+      left: 0.15rem;
+      width: 0.95rem;
+      height: 0.95rem;
+      border-radius: 50%;
+      background: white;
+      transition: transform 0.15s ease;
+    }
+
+    .form-field .switch-input:checked {
+      background: #287be5;
+    }
+
+      .form-field .switch-input:checked::after {
+        transform: translateX(0.95rem);
+      }
+
+    .form-field .switch-input:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+    }
+
+  .field-error {
+    color: #c0392b;
+    font-size: 0.64rem;
+  }
 
   .teacher-field {
     display: flex;
