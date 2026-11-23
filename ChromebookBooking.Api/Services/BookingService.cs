@@ -20,14 +20,7 @@ public sealed class BookingService : IBookingService
         _allocator = new CabinetAllocator();
     }
 
-    public async Task BookAsync(
-        DateOnly date,
-        int classPeriodId,
-        int teacherId,
-        int sectionId,
-        bool isPartial,
-        int? chromebooksQuantity,
-        string? discipline = null)
+    public async Task BookAsync(DateOnly date, int classPeriodId, int teacherId, int sectionId, bool isPartial, int? chromebooksQuantity, string? subject)
     {
         ClassPeriod? classPeriod = await GetClassPeriodByIdAsync(classPeriodId);
         if (classPeriod is null)
@@ -70,7 +63,7 @@ public sealed class BookingService : IBookingService
             sectionId,
             isPartial,
             chromebooksQuantity,
-            discipline);
+            subject);
 
         await _context.Bookings.AddAsync(booking);
 
@@ -157,7 +150,7 @@ public sealed class BookingService : IBookingService
                 b.Section!.Name,
                 b.IsPartial,
                 b.ChromebooksQuantity,
-                b.Discipline
+                b.Subject
             ))
             .ToListAsync();
     }
@@ -183,7 +176,7 @@ public sealed class BookingService : IBookingService
                 b.Section!.Name,
                 b.IsPartial,
                 b.ChromebooksQuantity,
-                b.Discipline
+                b.Subject
             ))
             .ToListAsync();
     }
@@ -237,6 +230,6 @@ public sealed class BookingService : IBookingService
         }
 
         return schedule;
-    }
+    }   
 
 }

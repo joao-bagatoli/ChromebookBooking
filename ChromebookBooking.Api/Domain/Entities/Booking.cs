@@ -6,7 +6,7 @@ namespace ChromebookBooking.Api.Domain.Entities;
 
 public sealed class Booking
 {
-    public const int DisciplineMaxLength = 100;
+    public const int SubjectMaxLength = 100;
 
     [Key]
     [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
@@ -31,15 +31,14 @@ public sealed class Booking
     public int SectionId { get; private set; }
     public Section? Section { get; private set; }
 
-    // Disciplina em que o gabinete será usado (opcional)
-    [MaxLength(DisciplineMaxLength)]
-    public string? Discipline { get; private set; }
-
     [Required]
     public bool IsPartial { get; private set; }
 
     // ALTER TABLE
     public int? ChromebooksQuantity { get; private set; }
+
+    // ALTER TABLE
+    public string? Subject { get; private set; }
 
     [Required]
     public bool IsCancelled { get; private set; }
@@ -50,14 +49,14 @@ public sealed class Booking
     private Booking() { }
 
     public Booking(
-        DateOnly date,
-        int classPeriodId,
-        int cabinetId,
-        int teacherId,
-        int sectionId,
-        bool isPartial = false,
-        int? chromebooksQuantity = null,
-        string? discipline = null)
+        DateOnly date, 
+        int classPeriodId, 
+        int cabinetId, 
+        int teacherId, 
+        int sectionId, 
+        bool isPartial = false, 
+        int? chromebooksQuantity = null, 
+        string? subject = null)
     {
         if (isPartial && (chromebooksQuantity is null || chromebooksQuantity <= 0))
         {
@@ -74,9 +73,9 @@ public sealed class Booking
         CabinetId = cabinetId;
         TeacherId = teacherId;
         SectionId = sectionId;
-        Discipline = NormalizeDiscipline(discipline);
         IsPartial = isPartial;
         ChromebooksQuantity = chromebooksQuantity;
+        Subject = NormalizeSubject(subject);
         IsCancelled = false;
         CreatedAt = DateTime.UtcNow;
     }
@@ -97,18 +96,18 @@ public sealed class Booking
     }
 
     // Texto vazio vira null; espaços nas pontas são removidos
-    private static string? NormalizeDiscipline(string? discipline)
+    private static string? NormalizeSubject(string? subject)
     {
-        if (string.IsNullOrWhiteSpace(discipline))
+        if (string.IsNullOrWhiteSpace(subject))
         {
             return null;
         }
 
-        var trimmed = discipline.Trim();
+        var trimmed = subject.Trim();
 
-        if (trimmed.Length > DisciplineMaxLength)
+        if (trimmed.Length > SubjectMaxLength)
         {
-            throw new DomainException($"A disciplina deve ter no máximo {DisciplineMaxLength} caracteres.");
+            throw new DomainException($"A disciplina deve ter no máximo {SubjectMaxLength} caracteres.");
         }
 
         return trimmed;

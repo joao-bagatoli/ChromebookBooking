@@ -12,8 +12,8 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace ChromebookBooking.Api.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20261120203055_AddDisciplineToBookings")]
-    partial class AddDisciplineToBookings
+    [Migration("20261120183218_AddSubjectToBooking")]
+    partial class AddSubjectToBooking
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -48,10 +48,6 @@ namespace ChromebookBooking.Api.Migrations
                     b.Property<DateOnly>("Date")
                         .HasColumnType("date");
 
-                    b.Property<string>("Discipline")
-                        .HasMaxLength(100)
-                        .HasColumnType("character varying(100)");
-
                     b.Property<bool>("IsCancelled")
                         .HasColumnType("boolean");
 
@@ -60,6 +56,9 @@ namespace ChromebookBooking.Api.Migrations
 
                     b.Property<int>("SectionId")
                         .HasColumnType("integer");
+
+                    b.Property<string>("Subject")
+                        .HasColumnType("text");
 
                     b.Property<int>("TeacherId")
                         .HasColumnType("integer");

@@ -1,5 +1,6 @@
 <script setup lang="ts">
-  import { computed } from 'vue'
+  import { computed, ref } from 'vue'
+  import SelectButton from 'primevue/selectbutton'
 
   interface Booking {
     id: number
@@ -17,6 +18,7 @@
     id: number
     label: string
     time: string
+    shift: string
   }
 
   interface Day {
@@ -126,6 +128,17 @@
 
     return formatted.charAt(0).toUpperCase() + formatted.slice(1)
   })
+
+  const selectedShift = ref<string>('Morning')
+
+  const shiftOptions = [
+    { label: 'Matutino', value: 'Morning' },
+    { label: 'Vespertino', value: 'Afternoon' },
+  ]
+
+  const filteredPeriods = computed(() => {
+    return props.periods.filter(period => period.shift === selectedShift.value)
+  })
 </script>
 
 <template>
@@ -135,26 +148,36 @@
 
       <h2 class="current-month-year">{{ currentMonthYear }}</h2>
 
-      <div class="nav-buttons">
-        <button class="calendar-button icon-button"
-                type="button"
-                aria-label="Semana anterior"
-                @click="emit('moveWeek', -1)">
-          <i class="pi pi-angle-left"></i>
-        </button>
+      <div class="nav-actions">
+        <SelectButton v-model="selectedShift"
+                      :options="shiftOptions"
+                      optionLabel="label"
+                      optionValue="value"
+                      :allowEmpty="false"
+                      size="small"
+                      aria-label="Selecionar turno" />
 
-        <button class="calendar-button today-button"
-                type="button"
-                @click="emit('goToToday')">
-          Hoje
-        </button>
+        <div class="nav-buttons">
+          <button class="calendar-button icon-button"
+                  type="button"
+                  aria-label="Semana anterior"
+                  @click="emit('moveWeek', -1)">
+            <i class="pi pi-angle-left"></i>
+          </button>
 
-        <button class="calendar-button icon-button"
-                type="button"
-                aria-label="Próxima semana"
-                @click="emit('moveWeek', 1)">
-          <i class="pi pi-angle-right"></i>
-        </button>
+          <button class="calendar-button today-button"
+                  type="button"
+                  @click="emit('goToToday')">
+            Hoje
+          </button>
+
+          <button class="calendar-button icon-button"
+                  type="button"
+                  aria-label="Próxima semana"
+                  @click="emit('moveWeek', 1)">
+            <i class="pi pi-angle-right"></i>
+          </button>
+        </div>
       </div>
 
     </div>
@@ -190,7 +213,7 @@
 
       </div>
 
-      <div v-for="period in props.periods"
+      <div v-for="period in filteredPeriods"
            :key="period.id"
            class="calendar-grid calendar-row">
 
@@ -320,6 +343,13 @@
     font-size: 1.15rem;
     font-weight: 600;
     color: var(--p-surface-800);
+  }
+
+  .nav-actions {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 0.75rem;
   }
 
   .nav-buttons {

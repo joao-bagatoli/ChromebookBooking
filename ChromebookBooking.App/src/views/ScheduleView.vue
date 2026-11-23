@@ -12,6 +12,7 @@
     id: number
     label: string
     time: string
+    shift: string
   }
 
   interface Day {
@@ -133,10 +134,13 @@
 
       sections.value = loadedSections
 
+      console.log('classPeriods', classPeriods);
+
       periods.value = classPeriods.map(classPeriod => ({
         id: classPeriod.id,
         label: classPeriod.name,
         time: `${formatTime(classPeriod.startTime)}–${formatTime(classPeriod.endTime)}`,
+        shift: classPeriod.shift,
       }))
     } catch (e) {
       loadError.value =
@@ -161,7 +165,7 @@
       teacher: booking.teacherName ?? booking.teacherEmail,
       cabinetId: booking.cabinetId,
       cabinetName: booking.cabinetName,
-      discipline: booking.discipline ?? undefined,
+      discipline: booking.subject ?? undefined,
       isPartial: booking.isPartial,
       chromebooksQuantity: booking.chromebooksQuantity ?? null,
       isMine: booking.teacherEmail.toLowerCase() === loggedEmail.value,
@@ -253,9 +257,9 @@
         classPeriodId: period.id,
         teacherId,
         sectionId: form.sectionId,
-        discipline: form.discipline.trim() || null,
         isPartial: form.isPartial,
         chromebooksQuantity: form.isPartial ? form.chromebooksQuantity : null,
+        subject: form.discipline.trim() || null,
       })
 
       reservationDialog.value = null

@@ -5,16 +5,15 @@
 namespace ChromebookBooking.Api.Migrations
 {
     /// <inheritdoc />
-    public partial class AddDisciplineToBookings : Migration
+    public partial class AddSubjectToBooking : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.AddColumn<string>(
-                name: "Discipline",
+                name: "Subject",
                 table: "Bookings",
-                type: "character varying(100)",
-                maxLength: 100,
+                type: "text",
                 nullable: true);
         }
 
@@ -22,7 +21,7 @@ namespace ChromebookBooking.Api.Migrations
         protected override void Down(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.DropColumn(
-                name: "Discipline",
+                name: "Subject",
                 table: "Bookings");
         }
     }
